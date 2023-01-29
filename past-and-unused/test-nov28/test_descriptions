@@ -1,0 +1,47 @@
+learning rate: 0.05
+# epochs: 500
+no batching
+test set: same as train set
+
+random words test; discriminate on vowels:
+
+test1
+words: ball, dance, game
+results: passed
+accuracy: 100%
+
+test2
+words: bee, dive, gift
+results: passed
+accuracy: 100%
+
+test3
+words: bird, dog, go
+results: passed
+accuracy: 100%
+
+
+similar vowels test:
+
+test4
+words: bane, date, game
+results: passed
+accuracy: 100%
+
+test5
+words: bread, dance, gap
+results: passed
+accuracy: 100%
+
+test6
+words: ball, bane, date, dance, game, gap
+results: less sure but still accurate for the most part
+accuracy: 95%
+
+test7
+words: all
+results: a bit better than guessing
+accuracy: 51%
+
+
+

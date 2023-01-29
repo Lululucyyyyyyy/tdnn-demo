@@ -1,0 +1,27 @@
+Sample rate (Fs): 8000 Hz
+Bits: 8 bit resolution
+10 files per word
+
+words beginning with "b"
+ball
+bane
+bee
+bird
+bow (boe)
+bread
+
+words beginning with "d"
+dance
+date
+dive
+dog
+door
+duck
+
+words beginning with "g"
+game
+gap
+gift
+go
+grow
+guide
