@@ -3,7 +3,7 @@ import numpy as np
 import math
 import torch
 
-# spectrogram_path = 'dataset5/spectrograms/b/bird00012-280.txt'
+spectrogram_path = 'dataset5/spectrograms/d/dance00001-430.txt'
 
 def display(path):
 	with open(path, 'r') as f:
@@ -43,4 +43,4 @@ def display_matrix(melSpectrogram):
 	plt.colorbar(orientation='vertical')
 	plt.show()
 
-# display(spectrogram_path)
+display(spectrogram_path)

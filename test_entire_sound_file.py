@@ -29,7 +29,7 @@ class TDNNv1(nn.Module):
 	    return out
 
 # loading model params from file
-model_params_path = 'model_params/model_params_001' 
+model_params_path = 'model_params/model_params_008' 
 model_params = torch.load(model_params_path)
 model = model_params['model']
 mean = model_params['mean']
@@ -43,8 +43,11 @@ std = model_params['std']
 model.eval()
 
 # testing
-spectrogram_file_path = 'dataset5/spectrograms/b/ball00001-240.txt'
+spectrogram_file_path = 'dataset5/spectrograms/d/dance00001-430.txt'
 fs = spectrogram_file_path.split("-") # split file name to get starting frame
+file_name = spectrogram_file_path.split("/")[3].split('.')[0]
+time = int(file_name.split('-')[1]) / 10
+
 start = int(fs[1].split('.')[0])//10
 with open(spectrogram_file_path) as g:
     mel_spectrogram = [[float(num) for num in line.split(',')] for line in g]
@@ -66,6 +69,7 @@ inputs = normed_data
 output_b = []
 output_d = []
 output_g = []
+output_null = []
 
 timeline = [i for i in range(len(inputs))]
 
@@ -76,9 +80,9 @@ for i, curr_input in enumerate(inputs):
 	output_b.append(outputs[0][0].item())
 	output_d.append(outputs[0][1].item())
 	output_g.append(outputs[0][2].item())
-
-file_name = spectrogram_file_path.split("/")[3].split('.')[0]
-time = int(file_name.split('-')[1]) / 10
+	output_null.append(outputs[0][3].item())
+	if i == time:
+		print('model predicted at true timeframe', predicted)
 
 fig, ax = plt.subplots()
 ax.set_title('melSpectrogram of ' + file_name)
@@ -86,7 +90,8 @@ ax.set_title('melSpectrogram of ' + file_name)
 line1, = ax.plot(output_b, color="skyblue", label="b")	
 line2, = ax.plot(output_d, color="mediumslateblue", label="d")	
 line3, = ax.plot(output_g, color="plum", label="g")	
+line4, = ax.plot(output_null, color="red", label="null")	
 plt.plot([time] * 2, [-10, 10], color="khaki")
 
-ax.legend([line1, line2, line3], ["b", "d", "g"])
+ax.legend([line1, line2, line3, line4], ["b", "d", "g", "null"])
 plt.show()
