@@ -1,33 +1,3 @@
-// defines a TF model load function
-function loadModel(){	
-  console.log('loading model');
-  	
-  // loads the model
-  model = tf.loadLayersModel('https://drive.google.com/file/d/1IU0sxZdo6hDRAFzbUmh_8k8d5pCNPG7_/view?usp=sharing');   
-  
-  model.then(function (res) {
-    // warm start the model. speeds up the first inference
-    model.predict(tf.zeros([1, 15, 16]))
-    console.log('sample loaded to be' + model.predict(tf.zeros([1, 15, 16])));
-    console.log(prediction);
-  }, function (err) {
-      console.log(err);
-  });
-  
-  
-  // return model
-  return model
-}
-
-function predictModel(freqData){
-
-  // gets model prediction
-  y = model.predict(freqData);
-  
-  // replaces the text in the result tag by the model prediction
-  document.getElementById('model_data').innerHTML = "Prediction: " + y.argMax(1).dataSync();
-}
-
 Polymer('g-spectrogram', {
   // Show the controls UI.
   controls: false,
@@ -49,9 +19,6 @@ Polymer('g-spectrogram', {
     // Require user gesture before creating audio context, etc.
     window.addEventListener('mousedown', () => this.createAudioGraph());
     window.addEventListener('touchstart', () => this.createAudioGraph());
-    document.getElementById('start-rec').addEventListener('clicked', () => {
-      this.createAudioGraph();
-    });
   },
 
   createAudioGraph: async function() {
@@ -120,8 +87,6 @@ Polymer('g-spectrogram', {
 
   renderFreqDomain: function() {
     this.analyser.getByteFrequencyData(this.freq);
-
-    // predictModel(this);
 
     // Check if we're getting lots of zeros.
     if (this.freq[0] === 0) {
@@ -254,7 +219,6 @@ Polymer('g-spectrogram', {
   },
 
   onStream: function(stream) {
-    // loadModel();
     var input = this.audioContext.createMediaStreamSource(stream);
     var analyser = this.audioContext.createAnalyser();
     analyser.smoothingTimeConstant = 0;

@@ -28,3 +28,27 @@ header{
 /* .on-start-wrapper{
   display: none;
 } */
+
+.spectrogram-wrapper{
+  position: absolute;
+  width: 50%;
+  top: 25%;
+  right: 25%;
+  height: 50vh;
+  border: 1px solid red;
+}
+
+.header-wrapper{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid red;
+  width: 100%;
+}
+
+.header-context{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}

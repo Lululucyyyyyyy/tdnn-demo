@@ -2,24 +2,23 @@
 <html>
   <head>
     <script src="bower_components/platform/platform.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="import" href="g-spectrogram.html">
     <!-- <link href='//fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   </head>
   <body>
-    <g-spectrogram controls labels log oscillator></g-spectrogram>
-
-    <div id="instructions">
-      <h2>Spectrogram & Oscillator</h2>
-      <ol>
-      <li>^ Allow use of your microphone ^</li>
-      <li>Click or tap anywhere canvas to generate a tone</li>
-    </ol>
+    <div class="spectrogram-wrapper">
+      <g-spectrogram controls labels log oscillator></g-spectrogram>
     </div>
-
-    <div id="about">
-      <a href="http://smus.com/spectrogram-and-oscillator/" target="_blank">about</a>
+    <div class="header-wrapper">
+      <div class="header-content">
+        <h2>Time-Delay Neural Network Demo</h2>
+        <ol>
+        <li>^ Allow use of your microphone ^</li>
+        <li>Click or tap anywhere canvas to generate a tone</li>
+      </ol>
+      </div>
     </div>
 
     <script>
