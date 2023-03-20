@@ -206,7 +206,7 @@ def test(tdnn, test_loader, train_length, test_length, save_incorrect, incorect_
     if save_incorrect:
         print('incorrect examples loaded into', incorect_examples_path)
 
-def save_params(tdnn, optimizer, num_epochs, loss, mean, std, model_params_path):
+def save_params(tdnn, state_dict, optimizer, num_epochs, loss, mean, std, model_params_path):
     '''
     Saving Parameters
     '''
@@ -215,6 +215,7 @@ def save_params(tdnn, optimizer, num_epochs, loss, mean, std, model_params_path)
         'model_state_dict': tdnn.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': loss,
+        'state_dict': state_dict,
         }, model_params_path)
     torch.save({'model': tdnn,
                 'mean': mean,
@@ -232,16 +233,24 @@ test(trained_tdnn,
     len_train_data, 
     len_test_data, 
     save_incorrect = True, 
-    incorect_examples_path = 'incorrect_examples/samples_008', 
+    incorect_examples_path = 'incorrect_examples/samples_009', 
     files_dict = files_dict)
 
+# save_params(trained_tdnn, 
+#             optimizer, 
+#             num_epochs, 
+#             loss, 
+#             mean, 
+#             std, 
+#             model_params_path = 'model_params/model_params_008')
+
 save_params(trained_tdnn, 
+            trained_tdnn.state_dict(),
             optimizer, 
             num_epochs, 
             loss, 
             mean, 
             std, 
-            model_params_path = 'model_params/model_params_008')
-
+            model_params_path = 'model_params/model_params_009')
 
 

@@ -1,3 +1,34 @@
+// defines a TF model load function
+function loadModel(){	
+  console.log('loading model');
+  	
+  // loads the model
+  model = tf.loadLayersModel('https://drive.google.com/file/d/1IU0sxZdo6hDRAFzbUmh_8k8d5pCNPG7_/view?usp=sharing');   
+  
+  // model.then(function (res) {
+  //   // warm start the model. speeds up the first inference
+  //   model.predict(tf.zeros([1, 15, 16]))
+  //   console.log('sample loaded to be' + model.predict(tf.zeros([1, 15, 16])));
+  //   console.log(prediction);
+  // }, function (err) {
+  //     console.log(err);
+  // });
+  
+  
+  // return model
+  return model
+}
+
+function predictModel(freqData){
+
+  // gets model prediction
+  y = model.predict(freqData);
+  
+  // replaces the text in the result tag by the model prediction
+  document.getElementById('model_data').innerHTML = "Prediction: " + y.argMax(1).dataSync();
+}
+
+var going = false;
 var webaudio_tooling_obj = function () {
 	var audioContext;
 	var audioInput = null,
@@ -9,13 +40,16 @@ var webaudio_tooling_obj = function () {
   var BUFF_SIZE = 16384;
 
   document.getElementById('stop-rec').addEventListener('click', function () {
-  document.getElementById('stop-rec').style = "display: none";
-    document.getElementById('start-rec').style = "display: block";
-    audioContext.close();
+    document.getElementById('stop-rec').style = "display: none";
+      document.getElementById('start-rec').style = "display: block";
+      audioContext.close();
+      going = false;
   });
 
 	document.getElementById('start-rec').addEventListener('click', function () {
     console.log('button pressed');
+    loadModel();
+    going = true;
     audioContext = new AudioContext();
     document.getElementById("spectrogram").innerHTML = "";
 
@@ -98,13 +132,14 @@ var webaudio_tooling_obj = function () {
               // Get the current frequency data from the analyser node
               analyserNode.getByteFrequencyData(frequencyData);
 
-              if (frequencyData[0] === 0) {
-                console.warn(`Looks like zeros...`);
-              }
+              // if (frequencyData[0] === 0) {
+              //   console.warn(`Looks like zeros...`);
+              // }
   
               // Use the frequency data array as needed
-              console.log('line 106, inside Update Spectrogram')
               document.getElementById('spectrogram_data').innerHTML = frequencyData;
+              // document.getElementById('model_data').innerHTML = 0;
+              // predictModel(frequencyData);
 
               // Draw the frequency data as a spectrogram on the canvas
               drawSpectrogram(canvas, context, frequencyData);
@@ -113,7 +148,9 @@ var webaudio_tooling_obj = function () {
             }
             
             // Call the updateSpectrogram function to start the animation loop
-            updateSpectrogram();
+            if (going){
+              updateSpectrogram();
+            }
             
             // // Start drawing the spectrogram
             // drawSpectrogram();
