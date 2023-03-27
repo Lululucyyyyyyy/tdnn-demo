@@ -20,7 +20,8 @@ class TDNNv1(nn.Module):
     - sigmoid after tdnn
     - tdnn 2: 8 in channels, 3 out channels, 13 samples, window of 5
     - sigmoid after tdnn
-    - flatten: 9 frequencies, 4 out channels, flattens to (27, ) array
+    - flatten: 9 frequencies, 3 out channels, flattens to (27, ) array
+    - linear: 27 inputs, 4 outputs
     '''
 
     def __init__(self):

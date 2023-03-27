@@ -4,32 +4,57 @@
     <script src="bower_components/platform/platform.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="import" href="g-spectrogram.html">
-    <!-- <link href='//fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="../model.js"></script>
   </head>
   <body>
-    <div class="spectrogram-wrapper">
-      <g-spectrogram controls labels log oscillator></g-spectrogram>
-    </div>
     <div class="header-wrapper">
       <div class="header-content">
         <h2>Time-Delay Neural Network Demo</h2>
-        <ol>
+        <!-- <ol>
         <li>^ Allow use of your microphone ^</li>
         <li>Click or tap anywhere canvas to generate a tone</li>
-      </ol>
+      </ol> -->
       </div>
     </div>
-
-    <script>
-  // (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  //     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  //       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  //         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  //           ga('create', 'UA-17930798-31', 'borismus.github.io');
-  //             ga('send', 'pageview');
-
-    </script>
+    <div class="content-wrapper">
+      <div class="predictions">
+        Predictions 
+        <div class="pred-wrapper-wrapper">
+          <ul class="pred-wrapper">
+            <li>
+              <div id="pred1"></div>
+              b
+            </li>
+            <li>
+              d
+              <div id="pred2"></div>
+            </li>
+            <li>
+              g
+              <div id="pred3"></div>
+            </li>
+            <li>
+              null
+              <div id="pred4"></div>
+            </li>
+          </ul>
+          </div>
+          <div class="predClass-wrapper">
+            prediction:
+            <span id="predClass"></span>
+          </div>
+        </div>
+      </div>
+      <div class="spectrogram-wrapper-wrapper">
+        <div class="spectrogram-wrapper">
+          <g-spectrogram controls labels log oscillator></g-spectrogram>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

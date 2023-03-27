@@ -1,8 +1,9 @@
+
 Polymer('g-spectrogram', {
   // Show the controls UI.
   controls: false,
   // Log mode.
-  log: false,
+  log: true,
   // Show axis labels, and how many ticks.
   labels: false,
   ticks: 5,
@@ -12,13 +13,91 @@ Polymer('g-spectrogram', {
   oscillator: false,
   color: false,
 
+  // current data, 15 frames of 16 frequency bins
+  currDat: tf.zeros([16, 15]),
+  sampledFreqs: [73.91826923076923, 
+                104.5673076923077, 
+                142.4278846153846, 
+                193.5096153846154, 
+                262.0192307692308, 
+                351.5625, 
+                468.14903846153845, 
+                621.3942307692307, 
+                820.9134615384615, 
+                1084.1346153846155, 
+                1429.6875, 
+                1882.2115384615386, 
+                2475.360576923077, 
+                3251.8028846153848, 
+                4270.432692307692],
+
   attachedCallback: async function() {
     this.tempCanvas = document.createElement('canvas'),
     console.log('Created spectrogram');
+    // console.log('cur dat', this.currDat);
 
     // Require user gesture before creating audio context, etc.
     window.addEventListener('mousedown', () => this.createAudioGraph());
     window.addEventListener('touchstart', () => this.createAudioGraph());
+  },
+
+  extractFrequencies: async function(){
+    const predFrequencies = Array(16).fill(0);
+    const minFreq = 62.5;
+    const minIdx = 186;
+    const minLogIdx = 2;
+    const maxFreq = 6000;
+    const maxIdx = 820;
+    const maxLogIdx = 257;
+    var logIndex, i, sum, count, idx;
+    const lenFreqs = 820 - 186;
+    const chunkSize = Math.floor(lenFreqs / 16); // 16 frequency bins
+    count = 0
+    idx = 0
+    sum = 0;
+    var frequenciesBeingSampled = []
+    var currFreq = 0;
+    for (i = minIdx; i < maxIdx; i ++){
+      logIndex = this.logScale(i, this.freq.length);
+      sum += this.freq[logIndex];
+      currFreq += this.indexToFreq(logIndex);
+      if (count == chunkSize){
+        predFrequencies[idx] = sum;
+        count = 0;
+        sum = 0;
+        idx += 1;
+      } else {
+        count += 1;
+      }
+    }
+    console.log('frequencies being sampled', frequenciesBeingSampled)
+    return predFrequencies;
+  },
+
+  predictModel: async function(){
+    
+    // converts from a canvas data object to a tensor
+    var dataTensor = tf.transpose(this.currDat, [1, 0]).expandDims(0);
+    
+    // mean and std transformation
+    var dataTensorNormed = (dataTensor - mean) / std;
+
+    
+    // gets model prediction
+    var y = model.predict(dataTensor, {batchSize: 1});
+    
+    // replaces the text in the result tag by the model prediction
+    // "transform: scaleY("+y.dataSync()[0]*2+") translateY(-"+y.dataSync()[0]*3/2+"vh);";
+    document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
+    document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
+    document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
+    document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
+
+    const classes = ["b", "d", "g", "null"];
+    var predictedClass = tf.argMax(y.dataSync()).array()
+    .then(predictedClass => 
+      document.getElementById("predClass").innerHTML = classes[predictedClass]
+    );
   },
 
   createAudioGraph: async function() {
@@ -54,6 +133,15 @@ Polymer('g-spectrogram', {
       didResize = true;
     }
 
+    // predict model here
+    var currDat = this.currDat
+    var promise1 = this.extractFrequencies().then(function(currCol){
+      currCol = tf.transpose(tf.tensor([currCol]));
+      var sliced = currDat.slice([0, 0], [16, 14]);
+      this.currDat = tf.concat([sliced, currCol], 1);
+    });
+    this.predictModel();
+    
     //this.renderTimeDomain();
     this.renderFreqDomain();
 
