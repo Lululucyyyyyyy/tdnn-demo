@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from dataset_loader import load_dataset
 from sklearn.metrics import classification_report
 
+torch.manual_seed(0)
+
 class TDNNv1(nn.Module):
     '''
     TDNN Model from Paper, consisting of the following layers:
@@ -55,12 +57,14 @@ def load_and_process_data():
     data_labels = [] 
     files = []
 
-    load_dataset("dataset3/spectrograms/", data, data_labels, files, '3')
-    load_dataset("dataset4/spectrograms/", data, data_labels, files, '4')
-    load_dataset("dataset5/spectrograms/", data, data_labels, files, '5')
-    load_dataset("dataset6/spectrograms/", data, data_labels, files, '6')
-    load_dataset("dataset7/spectrograms/", data, data_labels, files, '7')
-    # load_dataset("dataset8/spectrograms/", data, data_labels, files, '8')
+    load_dataset("dataset3/spectrograms/", data, data_labels, files, '3', 0.1)
+    load_dataset("dataset4/spectrograms/", data, data_labels, files, '4', 0.1)
+    load_dataset("dataset5/spectrograms/", data, data_labels, files, '5', 0.1)
+    load_dataset("dataset6/spectrograms/", data, data_labels, files, '6', 0.1)
+    load_dataset("dataset7/spectrograms/", data, data_labels, files, '7', 0.1)
+    load_dataset("dataset8/spectrograms/", data, data_labels, files, '8', 0.1)
+
+    assert(len(data) == len(data_labels) and len(data) == len(files))
 
     '''
     Data Processing
@@ -113,10 +117,10 @@ def train(train_loader, len_train_data):
     '''
     Training
     '''
-
+    global tdnn
     tdnn = TDNNv1()
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(tdnn.parameters(), lr=0.15, momentum=0.2)
+    optimizer = optim.SGD(tdnn.parameters(), lr=0.10, momentum=0.2, weight_decay=0.01)
 
     # hyperparameters
     num_epochs = 500
@@ -148,13 +152,13 @@ def train(train_loader, len_train_data):
     plt.show()
     return tdnn, optimizer, loss, num_epochs
 
-def test(tdnn, test_loader, train_length, test_length, save_incorrect, incorect_examples_path, files_dict = {}):
+def test(tdnn_test, test_loader, train_length, test_length, save_incorrect, incorect_examples_path, files_dict = {}):
     '''
     Testing
     '''
     print("Testing on", train_length, "inputs (training data)")
 
-    tdnn.eval()
+    tdnn_test.eval()
 
     correct = 0
     total = 0
@@ -162,19 +166,16 @@ def test(tdnn, test_loader, train_length, test_length, save_incorrect, incorect_
     with torch.no_grad():
         for samples in train_loader:
             inputs, labels, files = samples
-            outputs = tdnn(inputs)
+            outputs = tdnn_test(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             if save_incorrect == True:
-                difference = np.subtract(predicted, labels)
-                not_equal = np.ma.nonzero(difference)[0]
-                incorrect = not_equal
-                if(len(not_equal) > 0):
-                    print(incorrect)
-                    for x in incorrect:
-                        print(files_dict[x])
-                        f.write(files_dict[x] + ' ' + '\n')
+                for i, x in enumerate(predicted):
+                    if x != labels[i]:
+                        file_int = files[i].item()
+                        file = files_dict[file_int]
+                        f.write(file + ' ' + 'predicted: ' + str(x.item()) + '\n')
 
     print(f'Accuracy of the network on the train samples: {100 * correct // total} %')
 
@@ -187,20 +188,17 @@ def test(tdnn, test_loader, train_length, test_length, save_incorrect, incorect_
     with torch.no_grad():
         for samples in test_loader:
             inputs, labels, files = samples
-            outputs = tdnn(inputs)
+            outputs = tdnn_test(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             print(classification_report(labels, predicted))
             if save_incorrect == True:
-                difference = np.subtract(predicted, labels)
-                not_equal = np.ma.nonzero(difference)[0]
-                incorrect = not_equal
-                if(len(not_equal) > 0):
-                    print(incorrect)
-                    for x in incorrect:
-                        print(files_dict[x])
-                        f.write(files_dict[x] + ' ' + '\n')
+                for i, x in enumerate(predicted):
+                    if x != labels[i]:
+                        file_int = files[i].item()
+                        file = files_dict[file_int]
+                        f.write(file + ' ' + 'predicted: ' + str(x.item()) + '\n')
     f.close()
 
     print(f'Accuracy of the network on the test samples: {100 * correct // total} %')
@@ -234,16 +232,8 @@ test(trained_tdnn,
     len_train_data, 
     len_test_data, 
     save_incorrect = True, 
-    incorect_examples_path = 'incorrect_examples/samples_009', 
+    incorect_examples_path = 'incorrect_examples/samples_011', 
     files_dict = files_dict)
-
-# save_params(trained_tdnn, 
-#             optimizer, 
-#             num_epochs, 
-#             loss, 
-#             mean, 
-#             std, 
-#             model_params_path = 'model_params/model_params_008')
 
 save_params(trained_tdnn, 
             trained_tdnn.state_dict(),
@@ -252,6 +242,6 @@ save_params(trained_tdnn,
             loss, 
             mean, 
             std, 
-            model_params_path = 'model_params/model_params_009')
+            model_params_path = 'model_params/model_params_011')
 
 

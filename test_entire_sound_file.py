@@ -29,21 +29,16 @@ class TDNNv1(nn.Module):
 	    return out
 
 # loading model params from file
-model_params_path = 'model_params/model_params_008' 
+model_params_path = 'model_params/model_params_011' 
 model_params = torch.load(model_params_path)
 model = model_params['model']
 mean = model_params['mean']
 std = model_params['std']
-# model = TDNNv1()
-# optimizer = optim.SGD(*args, **kwargs)
 
-# params = torch.load(model_params_path)
-# model.load_state_dict(params['model_state_dict'])
-# optimizer.load_state_dict(params['optimizer_state_dict'])
 model.eval()
 
 # testing
-spectrogram_file_path = 'dataset5/spectrograms/d/dance00001-430.txt'
+spectrogram_file_path = 'dataset8/spectrograms/d/dare00015-510.txt'
 fs = spectrogram_file_path.split("-") # split file name to get starting frame
 file_name = spectrogram_file_path.split("/")[3].split('.')[0]
 time = int(file_name.split('-')[1]) / 10
@@ -83,6 +78,8 @@ for i, curr_input in enumerate(inputs):
 	output_null.append(outputs[0][3].item())
 	if i == time:
 		print('model predicted at true timeframe', predicted)
+		print('melspectrogram:')
+		print(curr_input)
 
 fig, ax = plt.subplots()
 ax.set_title('melSpectrogram of ' + file_name)
