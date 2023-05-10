@@ -29,7 +29,7 @@ class TDNNv1(nn.Module):
 	    return out
 
 # loading model params from file
-model_params_path = 'model_params/model_params_011' 
+model_params_path = 'model_params/model_params_013' 
 model_params = torch.load(model_params_path)
 model = model_params['model']
 mean = model_params['mean']
@@ -55,11 +55,14 @@ for x in range(0, len(mel_spectrogram[0]) - 15 + 1):
 
 # data processing with same parameters as model
 data_tensor = torch.Tensor(data)
-logged_data = torch.log(data_tensor).max(torch.tensor(-25)) 
-std = torch.std(logged_data, 0)
-mean = torch.mean(logged_data, 0)
+logged_data = 10*torch.log10(data_tensor + 10**-25)
 normed_data = (logged_data - mean)/std
 inputs = normed_data
+
+print('data')
+print(logged_data)
+print('inputs')
+print(inputs)
 
 output_b = []
 output_d = []

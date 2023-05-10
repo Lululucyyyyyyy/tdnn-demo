@@ -14,7 +14,7 @@ Polymer('g-spectrogram', {
   color: false,
 
   // current data, 15 frames of 16 frequency bins
-  currDat: tf.zeros([16, 15]),
+  currDat: tf.zeros([16, 15], dtype='float32'),
   sampledFreqs: [126.2,  275.2, 451.1, 
                   658.6, 903.6, 1192.8, 
                   1534.1, 2412.5, 2973.7, 
@@ -22,7 +22,7 @@ Polymer('g-spectrogram', {
                   6430.3, 7716.1, 9233.7],
   sampledIdx: [5, 12, 19, 28, 39, 51, 65, 103, 127, 155, 189, 228, 274, 329, 394],
   sampledIdxBuckets: [0, 8, 15, 33, 45, 58, 84, 115, 141, 172, 208, 251, 201, 362, 500],
-
+  
   attachedCallback: async function() {
     this.tempCanvas = document.createElement('canvas'),
     console.log('Created spectrogram');
@@ -34,39 +34,62 @@ Polymer('g-spectrogram', {
   },
 
   extractFrequencies: function(){
+    this.analyser.getFloatFrequencyData(this.freq2);
+    //this.freq2 = this.freq2.map(x => Math.pow(10, x / 10)); // matlab transformation
     const predFrequencies = Array(16).fill(0);
     var currChunk, numElems;
     count = 0
     idx = 0
     sum = 0;
-    var sampledIdxTemp = this.sampledIdxBuckets
+    var sampledIdxTemp = this.sampledIdxBuckets;
     for (i = 0; i < sampledIdxTemp.length - 1; i++){
-      currChunk = this.freq.slice(sampledIdxTemp[i], sampledIdxTemp[i + 1]);
+      currChunk = this.freq2.slice(sampledIdxTemp[i], sampledIdxTemp[i + 1]);
       numElems = sampledIdxTemp[i + 1] - sampledIdxTemp[i];
       predFrequencies[i] = currChunk.reduce((partialSum, a) => partialSum + a, 0) / numElems;
+      if (predFrequencies[i] == 0){
+        predFrequencies[i] = this.freq2.slice(this.sampledIdx[i]);
+        if (predFrequencies[i] == 0){
+          predFrequencies = Math.min(predFrequencies);
+        }
+      }
     }
+    // console.log("this.freq2", this.freq2);
+    // console.log("pred freq", predFrequencies);
     return predFrequencies;
   },
 
   predictModel: async function(){
-    
     // converts from a canvas data object to a tensor
     var dataTensor = tf.transpose(this.currDat, [1, 0]);
+    var print = false;
 
-    // log
-    dataTensor = tf.log(dataTensor);
-    dataTensor = tf.maximum(dataTensor, [-25]);
-    
+    if (print == true){
+      for(var i = 0; i < 15; i ++){
+        console.log('currDat',i, this.currDat.dataSync().slice(i*16,(i+1)*16));
+      }
+    }
+
+    if (print == true){
+      for(var i = 0; i < 15; i ++){
+        console.log('before transformations',i, dataTensor.dataSync().slice(i*16,(i+1)*16));
+      }
+    }
+
     // mean and std transformation
     var subbed = tf.sub(dataTensor, mean);
     var dataTensorNormed = tf.div(subbed, std);
     dataTensorNormed = dataTensorNormed.expandDims(0);
+
+    if (print == true){
+      for(var i = 0; i < 15; i ++){
+        console.log('right before model',i, dataTensorNormed.dataSync().slice(i*16,(i+1)*16));
+      }
+    }
     
     // gets model prediction
     var y = model.predict(dataTensorNormed, {batchSize: 1});
     
     // replaces the text in the result tag by the model prediction
-    // "transform: scaleY("+y.dataSync()[0]*2+") translateY(-"+y.dataSync()[0]*3/2+"vh);";
     document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
     document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
     document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
@@ -76,11 +99,11 @@ Polymer('g-spectrogram', {
     var predictedClass = tf.argMax(y.dataSync()).array()
     .then(predictedClass => {
       document.getElementById("predClass").innerHTML = classes[predictedClass];
-      if(predictedClass != 3){
-        console.log('predicted class', predictedClass);
-        console.log(y.dataSync());
-        dataTensorNormed.array().then(array => console.log(array));
-      }
+      // if(predictedClass != 3){
+      //   console.log('predicted class', predictedClass);
+      //   console.log(y.dataSync());
+      //   // dataTensorNormed.array().then(array => console.log(array));
+      // }
       }
     )
     .catch(err =>
@@ -104,6 +127,9 @@ Polymer('g-spectrogram', {
   },
 
   render: function() {
+    var n = Date.now();
+    // console.log("time diff:", n - this.now);
+    this.now = n;
     this.width = window.innerWidth;
     this.height = window.innerHeight;
 
@@ -122,10 +148,9 @@ Polymer('g-spectrogram', {
 
     // predict model here
     var currCol = this.extractFrequencies()
-    currDat = this.currDat;
     currCol = tf.transpose(tf.tensor([currCol]));
-    var sliced = this.currDat.slice([0, 0], [16, 14]);
-    currDat = tf.concat([sliced, currCol], 1);
+    var sliced = this.currDat.slice([0, 1], [16, 14]);
+    var currDat = tf.concat([sliced, currCol], 1);
     this.currDat = currDat;
     this.predictModel();
 
@@ -136,8 +161,10 @@ Polymer('g-spectrogram', {
       this.renderAxesLabels();
     }
 
-    requestAnimationFrame(this.render.bind(this));
-
+    setTimeout(() => {
+      requestAnimationFrame(this.render.bind(this));
+    }, 0);
+    
     var now = new Date();
     if (this.lastRenderTime_) {
       this.instantaneousFPS = now - this.lastRenderTime_;
@@ -270,31 +297,6 @@ Polymer('g-spectrogram', {
       // Draw a tick mark.
       ctx.fillRect(x + 40, y, 30, 2);
     }
-
-    // for(var i = 0; i < this.sampledFreqs.length; i ++){
-    //   var freq = Math.floor(this.sampledFreqs[i]);
-
-    //   var index = this.sampledIdx[i];
-    //   var percent = index / this.getFFTBinCount();
-    //   var y = (1-percent) * this.height;
-    //   var x = this.width - 60;
-    //   var label;
-    //   var label = this.formatFreq(freq);
-    //   var units = this.formatUnits(freq);
-
-    //   ctx.fillStyle = "blue";
-    //   console.log(freq, label + units);
-
-    //   ctx.font = '16px Inconsolata';
-    //   // Draw the value.
-    //   ctx.textAlign = 'right';
-    //   ctx.fillText(label, x, y + yLabelOffset);
-    //   // Draw the units.
-    //   ctx.textAlign = 'left';
-    //   ctx.fillText(units, x + 10, y + yLabelOffset);
-
-    //   ctx.fillRect(x + 40, y, 30, 2);
-    // }
   },
 
   clearAxesLabels: function() {
@@ -336,6 +338,7 @@ Polymer('g-spectrogram', {
 
     this.analyser = analyser;
     this.freq = new Uint8Array(this.analyser.frequencyBinCount);
+    this.freq2 = new Float32Array(this.analyser.frequencyBinCount);
 
     // Setup a timer to visualize some stuff.
     this.render();

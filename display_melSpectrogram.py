@@ -16,8 +16,8 @@ def display(path):
 	fig = plt.figure(figsize=(3, 3))
 	ax = fig.add_subplot(111)
 	ax.set_title('melSpectrogram')
-	plt.imshow(melSpectrogram_np, aspect='auto')
-	ax.set_aspect('auto')
+	plt.imshow(melSpectrogram_np, origin = 'lower', aspect='auto')
+	ax.set_aspect(aspect='auto')
 
 	cax = fig.add_axes([0.12, 0.1, 0.78, 0.8])
 	cax.get_xaxis().set_visible(False)

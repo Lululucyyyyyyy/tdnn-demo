@@ -78,7 +78,7 @@ header{
 #pred1{
   background-color: #fe4e4e;
   width: 10vh;
-  height: 3vh;
+  height: 1vh;
   bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
@@ -88,7 +88,7 @@ header{
 #pred2{
   background-color: #ee5397;
   width: 10vh;
-  height: 3vh;
+  height: 1vh;
   bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
@@ -98,7 +98,7 @@ header{
 #pred3{
   background-color: #3466a5;
   width: 10vh;
-  height: 3vh;
+  height: 1vh;
   bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
@@ -108,7 +108,7 @@ header{
 #pred4{
   background-color: #00c4d4;
   width: 10vh;
-  height: 3vh;
+  height: 1vh;
   bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;

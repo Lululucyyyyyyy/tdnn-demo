@@ -57,7 +57,7 @@ def load_and_process_data():
     data_labels = [] 
     files = []
 
-    load_dataset("dataset3/spectrograms/", data, data_labels, files, '3', 0.1)
+    # load_dataset("dataset3/spectrograms/", data, data_labels, files, '3', 0.1)
     load_dataset("dataset4/spectrograms/", data, data_labels, files, '4', 0.1)
     load_dataset("dataset5/spectrograms/", data, data_labels, files, '5', 0.1)
     load_dataset("dataset6/spectrograms/", data, data_labels, files, '6', 0.1)
@@ -69,11 +69,13 @@ def load_and_process_data():
     '''
     Data Processing
     '''
+    
     test_length = int(len(data) * 0.1)
     train_length = len(data) - test_length
     data_tensor = torch.Tensor(data) # turn into torch tensor
-    logged_data = torch.log(data_tensor).max(torch.tensor(-25)) 
-    # # take the log, element-wise, cap at -25 to avoid -inf
+    eps = 10**-25 # avoid -inf in log
+    logged_data = 10 * torch.log10(data_tensor + eps) 
+    # transformation based on matlab data (melspectrogram transformation for plotting)
 
     # normalize
     std = torch.std(logged_data, 0)
@@ -232,7 +234,7 @@ test(trained_tdnn,
     len_train_data, 
     len_test_data, 
     save_incorrect = True, 
-    incorect_examples_path = 'incorrect_examples/samples_011', 
+    incorect_examples_path = 'incorrect_examples/samples_013', 
     files_dict = files_dict)
 
 save_params(trained_tdnn, 
@@ -242,6 +244,6 @@ save_params(trained_tdnn,
             loss, 
             mean, 
             std, 
-            model_params_path = 'model_params/model_params_011')
+            model_params_path = 'model_params/model_params_013')
 
 

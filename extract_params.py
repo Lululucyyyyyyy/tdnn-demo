@@ -36,26 +36,43 @@ class TDNNv1(nn.Module):
     return out
 
 # loading model params from file
-model_params_path = 'model_params/model_params_011' 
+model_params_path = 'model_params/model_params_013' 
 model_params = torch.load(model_params_path)
 model = model_params['model']
 mean = model_params['mean']
 std = model_params['std']
 # state_dict = model_params['state_dict']
 
-# for name, param in model.state_dict().items():
-#     # name: str
-#     # param: Tensor
-#     with open("model_params/009/"+name+".txt", "w+") as f:
-#         arr = param.numpy()
-#         print(name, arr.shape)
-#         if len(arr.shape) > 2:
-#           arr = arr.reshape(arr.shape[0], -1)
-#           # to load back, use
-#           # load_original_arr = loaded_arr.reshape(
-#           # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-#         np.savetxt("model_params/011/"+name+".txt", arr, delimiter=',')
-#     f.close()
+for name, param in model.state_dict().items():
+    # name: str
+    # param: Tensor
+    with open("model_params/013/"+name+".txt", "w+") as f:
+        arr = param.numpy()
+        print(name, arr.shape)
+        if len(arr.shape) > 2:
+          arr = arr.reshape(arr.shape[0], -1)
+          # to load back, use
+          # load_original_arr = loaded_arr.reshape(
+          # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
+        np.savetxt("model_params/013/"+name+".txt", arr, delimiter=',')
+    f.close()
 
-print(mean)
-print(std)
+with open("model_params/013/mean.txt", "w+") as f:
+  arr = mean.numpy()
+  if len(arr.shape) > 2:
+    arr = arr.reshape(arr.shape[0], -1)
+    # to load back, use
+    # load_original_arr = loaded_arr.reshape(
+    # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
+  np.savetxt("model_params/013/mean.txt", arr, delimiter=',')
+  f.close()
+
+with open("model_params/013/std.txt", "w+") as f:
+  arr = std.numpy()
+  if len(arr.shape) > 2:
+    arr = arr.reshape(arr.shape[0], -1)
+    # to load back, use
+    # load_original_arr = loaded_arr.reshape(
+    # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
+  np.savetxt("model_params/013/std.txt", arr, delimiter=',')
+  f.close()
