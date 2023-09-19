@@ -23,10 +23,21 @@ header{
   justify-content: center;
   border: 1px solid black;
   position: absolute;
-  width: 50%;
-  top: 40vh;
+  top: 50vh;
   left: 1vh;
   height: 45vh;
+}
+
+.spectrogram-wrapper-wrapper-2{
+  display: flex;
+  width: 40%;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid red;
+  position: absolute;
+  top: 10vh;
+  left: 1vh;
+  height: 25vh;
 }
 
 .spectrogram-wrapper{
@@ -36,6 +47,15 @@ header{
   top: 0vh;
   left: 0%;
   height: 45vh;
+}
+
+.spectrogram-wrapper-2{
+  /* border: 1px solid red; */
+  position: absolute;
+  width: 100%;
+  top: 0vh;
+  left: 0%;
+  height: 25vh;
 }
 
 .header-wrapper{

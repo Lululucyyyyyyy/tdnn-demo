@@ -1,4 +1,4 @@
-Polymer('g-spectrogram', {
+Polymer('g-spectrogram-mini', {
   // Show the controls UI.
   controls: false,
   // Log mode.
@@ -58,6 +58,30 @@ Polymer('g-spectrogram', {
     return predFrequencies;
   },
 
+  extractFrequenciesByte: function(){
+    this.analyser.getByteFrequencyData(this.freq);
+    const predFrequencies = Array(16).fill(0);
+    var currChunk, numElems;
+    count = 0
+    idx = 0
+    sum = 0;
+    var sampledIdxTemp = this.sampledIdxBuckets;
+    for (i = 0; i < sampledIdxTemp.length - 1; i++){
+      currChunk = this.freq.slice(sampledIdxTemp[i], sampledIdxTemp[i + 1]);
+      numElems = sampledIdxTemp[i + 1] - sampledIdxTemp[i];
+      predFrequencies[i] = currChunk.reduce((partialSum, a) => partialSum + a, 0) / numElems;
+      if (predFrequencies[i] == 0){
+        predFrequencies[i] = this.freq.slice(this.sampledIdx[i]);
+        if (predFrequencies[i] == 0){
+          predFrequencies = Math.min(predFrequencies);
+        }
+      }
+    }
+    // console.log("this.freq", this.freq);
+    // console.log("pred freq", predFrequencies);
+    return predFrequencies;
+  },
+
   predictModel: async function(){
     // converts from a canvas data object to a tensor
     var dataTensor = tf.transpose(this.currDat, [1, 0]);
@@ -86,28 +110,28 @@ Polymer('g-spectrogram', {
       }
     }
     
-    // gets model prediction
-    var y = model.predict(dataTensorNormed, {batchSize: 1});
+    // // gets model prediction
+    // var y = model.predict(dataTensorNormed, {batchSize: 1});
     
-    // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
-    document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
-    document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
-    document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
+    // // replaces the text in the result tag by the model prediction
+    // document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
+    // document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
+    // document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
+    // document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
 
-    const classes = ["b", "d", "g", "null"];
-    var predictedClass = tf.argMax(y.dataSync()).array()
-    .then(predictedClass => {
-      document.getElementById("predClass").innerHTML = classes[predictedClass];
-      // if(predictedClass != 3){
-      //   console.log('predicted class', predictedClass);
-      //   console.log(y.dataSync());
-      //   // dataTensorNormed.array().then(array => console.log(array));
-      // }
-      }
-    )
-    .catch(err =>
-      console.log(err));
+    // const classes = ["b", "d", "g", "null"];
+    // var predictedClass = tf.argMax(y.dataSync()).array()
+    // .then(predictedClass => {
+    //   document.getElementById("predClass").innerHTML = classes[predictedClass];
+    //   // if(predictedClass != 3){
+    //   //   console.log('predicted class', predictedClass);
+    //   //   console.log(y.dataSync());
+    //   //   // dataTensorNormed.array().then(array => console.log(array));
+    //   // }
+    //   }
+    // )
+    // .catch(err =>
+    //   console.log(err));
 
   },
 
@@ -147,33 +171,32 @@ Polymer('g-spectrogram', {
     }
 
     // stop button
-    document.getElementById('main-spectrogram').onclick = () => {
+    document.getElementById('mini-spectrogram').onclick = () => {
       if (this.audioContext.state == "running"){
-        console.log('clicked, stopping now');
+        console.log('mini clicked, stopping now');
         this.audioContext.suspend().then( () => {
           this.going = false;
         });
       } else if (this.audioContext.state == "suspended"){
-        console.log('starting again');
+        console.log('mini clicked, starting again');
         this.audioContext.resume().then(() => {
           this.going = true;
         });
       }
-  }
+    }
 
+    // predict model here
+    // var currCol = this.extractFrequencies()
+    // currCol = tf.transpose(tf.tensor([currCol]));
+    // var sliced = this.currDat.slice([0, 1], [16, 14]);
+    // var currDat = tf.concat([sliced, currCol], 1);
+    // this.currDat = currDat;
+    // this.predictModel();
+
+    // this.renderTimeDomain();
     if (this.going){
-       // predict model here
-      var currCol = this.extractFrequencies()
-      currCol = tf.transpose(tf.tensor([currCol]));
-      var sliced = this.currDat.slice([0, 1], [16, 14]);
-      var currDat = tf.concat([sliced, currCol], 1);
-      this.currDat = currDat;
-      this.predictModel();
-
-      // this.renderTimeDomain();
       this.renderFreqDomain();
     }
-   
 
     if (this.labels && didResize) {
       this.renderAxesLabels();
@@ -182,7 +205,7 @@ Polymer('g-spectrogram', {
     setTimeout(() => {
       requestAnimationFrame(this.render.bind(this));
     }, 0);
-
+    
     var now = new Date();
     if (this.lastRenderTime_) {
       this.instantaneousFPS = now - this.lastRenderTime_;
@@ -221,24 +244,26 @@ Polymer('g-spectrogram', {
     tempCtx.drawImage(this.$.canvas, 0, 0, this.width, this.height);
 
     // Iterate over the frequencies.
-    for (var i = 0; i < this.freq.length; i++) {
+    var freq16 = this.extractFrequenciesByte();
+    for (var i = 0; i < 16; i++) {
       var value;
       // Draw each pixel with the specific color.
       if (this.log) {
-        logIndex = this.logScale(i, this.freq.length);
-        value = this.freq[logIndex];
+        logIndex = this.logScale(i, 16);
+        value = freq16[logIndex];
       } else {
-        value = this.freq[i];
+        value = freq16[i];
       }
 
+      // console.log("16 process value: ", value);
       ctx.fillStyle = (this.color ? this.getFullColor(value) : this.getGrayColor(value));
 
-      var percent = i / this.freq.length;
+      var percent = i / 16;
       var y = Math.round(percent * this.height);
 
       // draw the line at the right side of the canvas
       ctx.fillRect(this.width - this.speed, this.height - y,
-                   this.speed, this.speed);
+                   this.speed, this.height / 16);
     }
 
     // Translate the canvas.
