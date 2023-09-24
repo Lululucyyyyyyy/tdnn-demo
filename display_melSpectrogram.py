@@ -2,14 +2,32 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import torch
+import ast
+import argparse
 
-spectrogram_path = 'dataset5/spectrograms/d/dance00001-430.txt'
+parser = argparse.ArgumentParser(
+                    prog='ProgramName',
+                    description='What the program does',
+                    epilog='Text at the bottom of help')
+
+parser.add_argument('-f', type=str, help='spectrogram file to be parsed')
+parser.add_argument('-a', type=bool, help='is it in list format')
+
+args = parser.parse_args()
+spectrogram_path = args.f
+already_list = args.a
+
 
 def display(path):
+	spectrogram = []
 	with open(path, 'r') as f:
-		spectrogram = [[float(num) for num in line.split(',')] for line in f]
+		if (already_list):
+			spectrogram = ast.literal_eval(f.read())
+		else:
+			spectrogram = [[float(num) for num in line.split(',')] for line in f]
 	f.close()
 
+	print(spectrogram)
 	spectrogram_np = np.array(spectrogram)
 	melSpectrogram_np = np.log(spectrogram_np)
 

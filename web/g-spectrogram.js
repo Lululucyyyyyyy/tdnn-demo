@@ -159,7 +159,7 @@ Polymer('g-spectrogram', {
           this.going = true;
         });
       }
-  }
+    }
 
     if (this.going){
        // predict model here

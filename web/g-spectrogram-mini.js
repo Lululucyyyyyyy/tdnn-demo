@@ -12,6 +12,8 @@ Polymer('g-spectrogram-mini', {
   oscillator: false,
   color: false,
   going: true,
+  writing: false,
+  recorded_data: [],
 
   // current data, 15 frames of 16 frequency bins
   currDat: tf.zeros([16, 15], dtype='float32'),
@@ -185,13 +187,36 @@ Polymer('g-spectrogram-mini', {
       }
     }
 
-    // predict model here
-    // var currCol = this.extractFrequencies()
-    // currCol = tf.transpose(tf.tensor([currCol]));
-    // var sliced = this.currDat.slice([0, 1], [16, 14]);
-    // var currDat = tf.concat([sliced, currCol], 1);
-    // this.currDat = currDat;
-    // this.predictModel();
+    document.getElementById('file-write-btn').onclick = () => {
+      if (this.writing == false){
+        this.currDat = tf.zeros([16, 1], dtype='float32');
+        this.writing = true;
+        document.getElementById('file-write-btn').innerHTML = "Stop File Write";
+      } else {
+        this.writing = false;
+        var link = document.createElement('a');
+        //console.log(currDat.toString());
+        var data = null;
+        currDat.array().then(array => 
+          data = new Blob([array.toString()], {type: 'text/plain'})
+        );
+        textFile = window.URL.createObjectURL(data);
+        console.log('File written successfully to', textFile);
+        link.href = textFile;
+        link.download = "data.txt";
+        link.click();
+        document.getElementById('file-write-btn').innerHTML = "Start File Write";
+      }
+    }
+
+    if(this.writing){
+      // data
+      var currCol = this.extractFrequencies();
+      currCol = tf.transpose(tf.tensor([currCol]));
+      var currDat = tf.concat([this.currDat, currCol], 1);
+      this.currDat = currDat;
+      // this.predictModel();
+    }
 
     // this.renderTimeDomain();
     if (this.going){

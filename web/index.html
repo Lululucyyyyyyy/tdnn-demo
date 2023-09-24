@@ -10,6 +10,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="../model.js"></script>
+    <script>
+      const fs = require('fs');
+    </script>
   </head>
   <body>
     <div class="header-wrapper">
@@ -19,6 +22,9 @@
         <li>^ Allow use of your microphone ^</li>
         <li>Click or tap anywhere canvas to generate a tone</li>
       </ol> -->
+      </div>
+      <div>
+        <div id="file-write-btn">Start File Write</div>
       </div>
     </div>
     <div class="content-wrapper">
