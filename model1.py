@@ -10,7 +10,7 @@ import numpy as np
 import os, re
 import torch.optim as optim
 import matplotlib.pyplot as plt
-from dataset_loader import load_dataset
+from mytools import load_dataset
 from sklearn.metrics import classification_report
 
 torch.manual_seed(0)

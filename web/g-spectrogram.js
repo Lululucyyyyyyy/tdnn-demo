@@ -168,7 +168,7 @@ Polymer('g-spectrogram', {
       var sliced = this.currDat.slice([0, 1], [16, 14]);
       var currDat = tf.concat([sliced, currCol], 1);
       this.currDat = currDat;
-      this.predictModel();
+      // this.predictModel();
 
       // this.renderTimeDomain();
       this.renderFreqDomain();

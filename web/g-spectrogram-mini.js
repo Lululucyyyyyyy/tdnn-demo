@@ -14,6 +14,10 @@ Polymer('g-spectrogram-mini', {
   going: true,
   writing: false,
   recorded_data: [],
+  file_naming_idx: 0,
+  file_download: true,
+  thresh: 0.3,
+  start_time_ms: -1,
 
   // current data, 15 frames of 16 frequency bins
   currDat: tf.zeros([16, 15], dtype='float32'),
@@ -84,9 +88,120 @@ Polymer('g-spectrogram-mini', {
     return predFrequencies;
   },
 
-  predictModel: async function(){
+  sumColumns: async function(matrix) {
+    const numRows = matrix.length;
+    const numCols = matrix[0].length; // Assuming all rows have the same number of columns
+    
+    const columnSums = new Array(numCols).fill(0);
+  
+    for (let col = 0; col < numCols; col++) {
+      for (let row = 0; row < numRows; row++) {
+        columnSums[col] += 10**(matrix[row][col]);
+      }
+    }
+
+    return columnSums;
+  },
+
+  argwhere: async function(array) {
+    const indices = [];
+    for (let i = 2; i < array.length; i++) {
+      if (array[i] > this.thresh) {
+        indices.push(i);
+      }
+    }
+    return indices;
+  },
+
+  customMax: async function(arguments) {
+    if (arguments.length === 0) {
+      return undefined; // Return undefined if no arguments are provided
+    }
+  
+    let max = -Infinity; // Start with a very low value
+    for (let i = 1; i < arguments.length; i++) {
+      if (arguments[i] > max) {
+        max = arguments[i];
+      }
+    }
+    return max;
+  },
+
+  findMaxFreq: async function(data){
+    this.start_time_ms = -1;
+
+    this.sumColumns(data, axis=0).then((col_sums) => {
+      this.customMax(col_sums).then((max_col_sum) => {
+        var array_2 = Array(col_sums);
+        for(var i = 0, length = col_sums.length; i < length; i++){
+            array_2[i] = col_sums[i] / max_col_sum;
+        }
+        console.log(array_2);
+        this.argwhere(array_2).then((thresh_indexes) => {
+          start_time_ms = thresh_indexes[0]*10 - 20;
+          // to capture onset in msec
+          console.log(start_time_ms);
+          this.start_time_ms = start_time_ms;
+        });
+      });
+    });
+  },
+
+  predictModel: async function(data){
     // converts from a canvas data object to a tensor
-    var dataTensor = tf.transpose(this.currDat, [1, 0]);
+
+    console.log('berfore', this.start_time_ms);
+    this.start_time_ms = -1;
+ 
+    // sum columns
+    var matrix = data
+    const numRows = matrix.length;
+    const numCols = matrix[0].length; // Assuming all rows have the same number of columns
+    
+    const columnSums = new Array(numCols).fill(0);
+  
+    for (let col = 0; col < numCols; col++) {
+      for (let row = 0; row < numRows; row++) {
+        columnSums[col] += 10**(matrix[row][col]);
+      }
+    }
+
+    // custom max
+    var arguments = columnSums
+    if (arguments.length === 0) {
+      return undefined; // Return undefined if no arguments are provided
+    }
+    let max = -Infinity; // Start with a very low value
+    for (let i = 1; i < arguments.length; i++) {
+      if (arguments[i] > max) {
+        max = arguments[i];
+      }
+    }
+    
+    // normalize
+    var array_2 = Array(columnSums);
+    for(var i = 0, length = columnSums.length; i < length; i++){
+        array_2[i] = columnSums[i] / max;
+    }
+
+    // find max
+    const thresh_indexes = [];
+    for (let i = 2; i < array_2.length; i++) {
+      if (array_2[i] > this.thresh) {
+        thresh_indexes.push(i);
+      }
+    }
+    
+    start_time_ms = thresh_indexes[0]*10 - 20;
+    // to capture onset in msec
+    this.start_time_ms = start_time_ms;
+
+    // const start_time_ms = await this.findMaxFreq(data);
+    console.log('after', this.start_time_ms);
+    start_time_ms = this.start_time_ms;
+    var start_frame = start_time_ms / 10;
+    var the_dat = this.currDat.slice([0, start_frame], [16, 15]);
+    var dataTensor = tf.transpose(the_dat, [1, 0]);
     var print = false;
 
     if (print == true){
@@ -112,29 +227,28 @@ Polymer('g-spectrogram-mini', {
       }
     }
     
-    // // gets model prediction
-    // var y = model.predict(dataTensorNormed, {batchSize: 1});
+    // gets model prediction
+    var y = model.predict(dataTensorNormed, {batchSize: 1});
     
-    // // replaces the text in the result tag by the model prediction
-    // document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
-    // document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
-    // document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
-    // document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
+    // replaces the text in the result tag by the model prediction
+    document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
+    document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
+    document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
+    document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
 
-    // const classes = ["b", "d", "g", "null"];
-    // var predictedClass = tf.argMax(y.dataSync()).array()
-    // .then(predictedClass => {
-    //   document.getElementById("predClass").innerHTML = classes[predictedClass];
-    //   // if(predictedClass != 3){
-    //   //   console.log('predicted class', predictedClass);
-    //   //   console.log(y.dataSync());
-    //   //   // dataTensorNormed.array().then(array => console.log(array));
-    //   // }
-    //   }
-    // )
-    // .catch(err =>
-    //   console.log(err));
-
+    const classes = ["b", "d", "g", "null"];
+    var predictedClass = tf.argMax(y.dataSync()).array()
+    .then(predictedClass => {
+      document.getElementById("predClass").innerHTML = classes[predictedClass];
+      // if(predictedClass != 3){
+      //   console.log('predicted class', predictedClass);
+      //   console.log(y.dataSync());
+      //   // dataTensorNormed.array().then(array => console.log(array));
+      // }
+      }
+    )
+    .catch(err =>
+      console.log(err));
   },
 
   createAudioGraph: async function() {
@@ -187,35 +301,75 @@ Polymer('g-spectrogram-mini', {
       }
     }
 
-    document.getElementById('file-write-btn').onclick = () => {
-      if (this.writing == false){
-        this.currDat = tf.zeros([16, 1], dtype='float32');
-        this.writing = true;
-        document.getElementById('file-write-btn').innerHTML = "Stop File Write";
+    document.getElementById('switch-act-btn').onclick = () => {
+      if (this.file_download){
+        this.file_download = false;
+        document.getElementById('file-write-btn').style = "display: none;";
+        document.getElementById('predict-btn').style = "display: block;";
       } else {
-        this.writing = false;
-        var link = document.createElement('a');
-        //console.log(currDat.toString());
-        var data = null;
-        currDat.array().then(array => 
-          data = new Blob([array.toString()], {type: 'text/plain'})
-        );
-        textFile = window.URL.createObjectURL(data);
-        console.log('File written successfully to', textFile);
-        link.href = textFile;
-        link.download = "data.txt";
-        link.click();
-        document.getElementById('file-write-btn').innerHTML = "Start File Write";
+        this.file_download = true;
+        document.getElementById('file-write-btn').style = "display: block;";
+        document.getElementById('predict-btn').style = "display: none;";
       }
     }
 
-    if(this.writing){
-      // data
+    if(this.file_download){
+      document.getElementById('file-write-btn').onclick = () => {
+        if (this.writing == false){
+          this.currDat = tf.zeros([16, 1], dtype='float32');
+          this.writing = true;
+          document.getElementById('file-write-btn').innerHTML = "Stop File Write";
+        } else {
+          this.writing = false;
+          var link = document.createElement('a');
+          var data_pre = currDat.arraySync();
+          var str = "";
+          for (row in data_pre) {
+            // if (Array.isArray(item)) str += printArr(item);
+            // else str += item + ", ";
+            // console.log(data_pre[row]);
+            str += data_pre[row].toString();
+            str += '\n';
+          }
+          var data = new Blob([str], {type: 'text/plain'});
+          console.log(data);
+          textFile = window.URL.createObjectURL(data);
+          console.log('File written successfully to', textFile);
+          link.href = textFile;
+          link.download = "data.txt";
+          link.click();
+          document.getElementById('file-write-btn').innerHTML = "Start File Write";
+        }
+      }
+
+      if(this.writing){
+        // data
+        var currCol = this.extractFrequencies();
+        currCol = tf.transpose(tf.tensor([currCol]));
+        var currDat = tf.concat([this.currDat, currCol], 1);
+        this.currDat = currDat;
+        // this.predictModel();
+      }
+    } else {
+      // predicting
       var currCol = this.extractFrequencies();
       currCol = tf.transpose(tf.tensor([currCol]));
       var currDat = tf.concat([this.currDat, currCol], 1);
       this.currDat = currDat;
-      // this.predictModel();
+      document.getElementById('predict-btn').onclick = () => {
+        if (this.writing == false){
+          this.currDat = tf.zeros([16, 1], dtype='float32');
+          this.writing = true;
+          this.color = true;
+          document.getElementById('predict-btn').innerHTML = "Stop and Predict";
+        } else {
+          this.writing = false;
+          this.color = false;
+          var data_pre = currDat.arraySync();
+          this.predictModel(data_pre);
+          document.getElementById('file-write-btn').innerHTML = "Record Sample";
+        }
+      }
     }
 
     // this.renderTimeDomain();
