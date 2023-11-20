@@ -68,33 +68,33 @@ for name, param in model.state_dict().items():
     with open(path +name+".txt", "w+") as f:
         arr = param.numpy()
         print(name, arr.shape)
-        print(arr, file=f)
-        # if len(arr.shape) > 2:
-        #   arr = arr.reshape(arr.shape[0], -1)
+        print(arr)
+        if len(arr.shape) > 2:
+          arr = arr.reshape(arr.shape[0], -1)
           # to load back, use
           # load_original_arr = loaded_arr.reshape(
           # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-        # np.savetxt(path+name+".txt", arr, delimiter=',')
+        np.savetxt(path+name+".txt", arr, delimiter=',')
     f.close()
 
 with open("model_params/" + str(args.n).zfill(3) + "/mean.txt", "w+") as f:
   arr = mean.numpy()
-  print(arr, file=f)
-  # if len(arr.shape) > 2:
-  #   arr = arr.reshape(arr.shape[0], -1)
+  # print(arr, file=f)
+  if len(arr.shape) > 2:
+    arr = arr.reshape(arr.shape[0], -1)
     # to load back, use
     # load_original_arr = loaded_arr.reshape(
     # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-  # np.savetxt("model_params/" + str(args.n).zfill(3) + "/mean.txt", arr, delimiter=',')
+  np.savetxt("model_params/" + str(args.n).zfill(3) + "/mean.txt", arr, delimiter=',')
   f.close()
 
 with open("model_params/" + str(args.n).zfill(3) + "/std.txt", "w+") as f:
   arr = std.numpy()
-  print(arr, file=f)
-  # if len(arr.shape) > 2:
-  #   arr = arr.reshape(arr.shape[0], -1)
+  # print(arr, file=f)
+  if len(arr.shape) > 2:
+    arr = arr.reshape(arr.shape[0], -1)
     # to load back, use
     # load_original_arr = loaded_arr.reshape(
     # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-  # np.savetxt("model_params/" + str(args.n).zfill(3) + "/std.txt", arr, delimiter=',')
+  np.savetxt("model_params/" + str(args.n).zfill(3) + "/std.txt", arr, delimiter=',')
   f.close()

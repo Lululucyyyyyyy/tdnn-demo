@@ -43,46 +43,46 @@ model = model_params['model']
 mean = model_params['mean']
 std = model_params['std']
 
-# model.eval()
-# model = model.float()
+model.eval()
+model = model.float()
 
-# single_sample = np.zeros((16, 15))
-# single_sample[10][9] = 1
+single_sample = np.zeros((16, 15))
+single_sample[10][9] = 1
 
-# data_tensor = torch.tensor([single_sample])
+data_tensor = torch.tensor([single_sample])
 
-# tdnnweight1 = None
-# tdnnbias1 = None
-# for name, param in model.state_dict().items():
-#     # name: str
-#     # param: Tensor
-#     arr = param.numpy()
-#     # print(name, arr.shape)
-#     if name == 'tdnn1.temporal_conv.weight':
-#         tdnnweight1 = arr
-#     if name == 'tdnn1.temporal_conv.bias':
-#         tdnnbias1 = arr
+tdnnweight1 = None
+tdnnbias1 = None
+for name, param in model.state_dict().items():
+    # name: str
+    # param: Tensor
+    arr = param.numpy()
+    # print(name, arr.shape)
+    if name == 'tdnn1.temporal_conv.weight':
+        tdnnweight1 = arr
+    if name == 'tdnn1.temporal_conv.bias':
+        tdnnbias1 = arr
 
-# std = torch.std(data_tensor, 0)
-# mean = torch.mean(data_tensor, 0)
-# normed_data = (data_tensor - mean)/std # normalize 
+std = torch.std(data_tensor, 0)
+mean = torch.mean(data_tensor, 0)
+normed_data = (data_tensor - mean)/std # normalize 
 
 
-# print('input shape', data_tensor.shape)
-# print(data_tensor)
-# tdnn1 = torch.nn.Conv1d(16, 8,
-#                 kernel_size=3,
-#                 dilation=1,
-#                 padding=0,
-#                 bias=True   # will be set to False for semi-orthogonal TDNNF convolutions
-#         )
-# tdnn1.weight.data = torch.tensor(tdnnweight1)
-# tdnn1.bias.data = torch.tensor(tdnnbias1)
-# o1 = tdnn1(data_tensor.float())
-# print('after first conv', o1.shape)
-# print(o1)
-# o2 = TDNNLayer(8, 3, [-2,0,2])(o1)
-# print('after first conv', o2.shape)
+print('input shape', data_tensor.shape)
+print(data_tensor)
+tdnn1 = torch.nn.Conv1d(16, 8,
+                kernel_size=3,
+                dilation=1,
+                padding=0,
+                bias=True   # will be set to False for semi-orthogonal TDNNF convolutions
+        )
+tdnn1.weight.data = torch.tensor(tdnnweight1)
+tdnn1.bias.data = torch.tensor(tdnnbias1)
+o1 = tdnn1(data_tensor.float())
+print('after first conv', o1.shape)
+print(o1)
+o2 = TDNNLayer(8, 3, [-2,0,2])(o1)
+print('after first conv', o2.shape)
 
 '''
 TESTING PYTORCH LINEAR LAYER

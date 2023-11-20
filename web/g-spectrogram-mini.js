@@ -201,7 +201,7 @@ Polymer('g-spectrogram-mini', {
     start_time_ms = this.start_time_ms;
     var start_frame = start_time_ms / 10;
     var the_dat = this.currDat.slice([0, start_frame], [16, 15]);
-    var dataTensor = tf.transpose(the_dat, [1, 0]);
+    var dataTensor = tf.stack([the_dat]);
     var print = false;
 
     if (print == true){
@@ -219,7 +219,7 @@ Polymer('g-spectrogram-mini', {
     // mean and std transformation
     var subbed = tf.sub(dataTensor, mean);
     var dataTensorNormed = tf.div(subbed, std);
-    dataTensorNormed = dataTensorNormed.expandDims(0);
+    var dataTensorNormedTransposed = tf.transpose(dataTensorNormed, [0, 2, 1]);
 
     if (print == true){
       for(var i = 0; i < 15; i ++){
@@ -228,7 +228,7 @@ Polymer('g-spectrogram-mini', {
     }
     
     // gets model prediction
-    var y = model.predict(dataTensorNormed, {batchSize: 1});
+    var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
     
     // replaces the text in the result tag by the model prediction
     document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
