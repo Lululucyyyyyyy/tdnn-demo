@@ -57,45 +57,44 @@ std = model_params['std']
 # state_dict = model_params['state_dict']
 
 path = "model_params/" + str(args.n).zfill(3)  + "/"
-    isExist = os.path.exists(path)
-    if not isExist:
-      os.makedirs(path)
+isExist = os.path.exists(path)
+if not isExist:
+  os.makedirs(path)
 
 for name, param in model.state_dict().items():
     # name: str
     # param: Tensor
-    path = "model_params/" + str(args.n).zfill(3)  + "/"+name+".txt"
-    isExist = os.path.exists(path)
-    if not isExist:
-      os.makedirs(path)
 
-    with open(path, "w+") as f:
+    with open(path +name+".txt", "w+") as f:
         arr = param.numpy()
         print(name, arr.shape)
-        if len(arr.shape) > 2:
-          arr = arr.reshape(arr.shape[0], -1)
+        print(arr, file=f)
+        # if len(arr.shape) > 2:
+        #   arr = arr.reshape(arr.shape[0], -1)
           # to load back, use
           # load_original_arr = loaded_arr.reshape(
           # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-        np.savetxt("model_params/" + str(args.n).zfill(3) + "/"+name+".txt", arr, delimiter=',')
+        # np.savetxt(path+name+".txt", arr, delimiter=',')
     f.close()
 
 with open("model_params/" + str(args.n).zfill(3) + "/mean.txt", "w+") as f:
   arr = mean.numpy()
-  if len(arr.shape) > 2:
-    arr = arr.reshape(arr.shape[0], -1)
+  print(arr, file=f)
+  # if len(arr.shape) > 2:
+  #   arr = arr.reshape(arr.shape[0], -1)
     # to load back, use
     # load_original_arr = loaded_arr.reshape(
     # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-  np.savetxt("model_params/" + str(args.n).zfill(3) + "/mean.txt", arr, delimiter=',')
+  # np.savetxt("model_params/" + str(args.n).zfill(3) + "/mean.txt", arr, delimiter=',')
   f.close()
 
 with open("model_params/" + str(args.n).zfill(3) + "/std.txt", "w+") as f:
   arr = std.numpy()
-  if len(arr.shape) > 2:
-    arr = arr.reshape(arr.shape[0], -1)
+  print(arr, file=f)
+  # if len(arr.shape) > 2:
+  #   arr = arr.reshape(arr.shape[0], -1)
     # to load back, use
     # load_original_arr = loaded_arr.reshape(
     # loaded_arr.shape[0], loaded_arr.shape[1] // arr.shape[2], arr.shape[2])
-  np.savetxt("model_params/" + str(args.n).zfill(3) + "/std.txt", arr, delimiter=',')
+  # np.savetxt("model_params/" + str(args.n).zfill(3) + "/std.txt", arr, delimiter=',')
   f.close()

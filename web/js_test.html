@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.13.0/dist/tf.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+    <script type="module" src="../model2.js"></script>
+
+    <style>
+      .btn1{
+        border: 1px solid black;
+        padding: 5px 10px;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header-content">
+        <h2>Testing the Javascript Model</h2>
+      </div>
+    </div>
+    <div class="content-wrapper">
+      Please go to console.
+      <form>
+        <input type="file" id="filepicker" webkitdirectory directory multiple/>
+      </form>
+      <a class="btn1" id="submit">submit</a>
+    </div>
+    <a class="btn1" id="single">single_sample_debug</a>
+    <div id="class34">0</div>
+    
+    <canvas></canvas>
+  </body>
+</html>

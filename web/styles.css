@@ -199,3 +199,7 @@ header{
   right: 30%;
   position: absolute;
 }
+
+canvas{
+  border: 1px solid red;
+}

@@ -17,7 +17,7 @@ import argparse
 
 torch.manual_seed(0)
 
-class TDNNv1(nn.Module):
+class TDNNv2(nn.Module):
     '''
     TDNN Model from Paper, consisting of the following layers:
     - tdnn 1: 16 in channels, 8 out channels, 15 samples, window of 3
@@ -29,7 +29,7 @@ class TDNNv1(nn.Module):
     '''
 
     def __init__(self):
-        super(TDNNv1, self).__init__()
+        super(TDNNv2, self).__init__()
 
         self.tdnn1 = TDNNLayer(16, 8, [-1,0,1])
         self.sigmoid1 = nn.Sigmoid()
@@ -161,7 +161,7 @@ def train(train_loader, len_train_data):
     Training
     '''
     global tdnn
-    tdnn = TDNNv1()
+    tdnn = TDNNv2()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(tdnn.parameters(), lr=10e-2, momentum=0.3) #weight_decay=0.01
 

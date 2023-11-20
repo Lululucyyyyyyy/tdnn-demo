@@ -1,6 +1,22 @@
-param_path = 'model_params/013/'
+from argparse import ArgumentParser
 
-with open('params.js', 'w+') as f:
+def parse_arguments():
+    # Command-line flags are defined here.
+    parser = ArgumentParser()
+    parser.add_argument('--n', dest='n', type=int,
+                        default=13, help="Model Number")
+    parser.add_argument('--f', dest='file', type=str,
+                        default="lolyouforgotthefile.js", help="Javascript File")
+    parser.add_argument('--verbose', dest="verbose", type=bool,
+                        default=False, help="print useless stuffs")
+    return parser.parse_args()
+
+args = parse_arguments()
+
+# param_path = 'model_params/013/'
+param_path = 'model_params/' + str(args.n).zfill(3) + "/"
+
+with open(args.file, 'w+') as f:
     f.write("const DEBUG = true; \n")
     f.write("/** ===================================================== \n *            PARAMETERS  \n* ===================================================== \n*/")
     f.write("\n")

@@ -236,6 +236,24 @@ def load_dataset(path_to_training_data, data, data_labels, files, dataset_num, p
 	length = len(data) - l_before
 	print("loaded", length, "samples (including null files)")
 
+def load_dataset_only_b(path_to_training_data, data, data_labels, files, dataset_num, prune_null):
+	'''
+	Uses load_file to load an entire dataset only for b
+
+	inputs:
+	- path_to_training_data: the path where the file is
+	- data: the list where the data is stored
+	- data_labels: the list wehre the labels are stored
+	- files: the list where the filenames are stored
+	'''
+	l_before = len(data)
+	print("loading", path_to_training_data)
+	for f in sorted(os.listdir(path_to_training_data + "b")):
+		load_file(f, 0, "b", path_to_training_data, data, data_labels, files)
+
+	length = len(data) - l_before
+	print("loaded", length, "samples (not including null files)")
+
 def load_dataset_shifted(path_to_training_data, data, data_labels, files, dataset_num, prune_null, shift_frames):
 	'''
 	Uses load_file and load_null_sample to load an entire dataset, with shifted frames
@@ -359,3 +377,4 @@ def name(file_path, word):
 # align_dataset("dataset3/spectrograms/")
 # align_dataset("dataset4/spectrograms/")
 # align_dataset("dataset9/")
+
