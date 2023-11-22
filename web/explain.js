@@ -10,6 +10,7 @@ window.onload = function(){
 function getData(){
     var currDat = localStorage.getItem("currDat");
     var ret = [];
+    console.log(currDat);
     currDat = currDat.split(",");
     // console.log(currDat.length);
     var numRows = 15;

@@ -250,7 +250,6 @@ Polymer('g-spectrogram-mini', {
     document.getElementById('pred1').style = "height: "+y_scaled[0] * 10 +"vh";
     document.getElementById('pred2').style = "height: "+y_scaled[1] * 10 +"vh";
     document.getElementById('pred3').style = "height: "+y_scaled[2] * 10 +"vh";
-    // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
 
     localStorage.setItem("currDat", the_dat.arraySync());
     localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
