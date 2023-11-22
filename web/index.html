@@ -10,66 +10,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="../model2.js"></script>
-    <script>
-      const fs = require('fs');
-    </script>
   </head>
   <body>
     <div class="header-wrapper">
       <div class="header-content">
         <h2>Time-Delay Neural Network Demo</h2>
-        <!-- <ol>
-        <li>^ Allow use of your microphone ^</li>
-        <li>Click or tap anywhere canvas to generate a tone</li>
-      </ol> -->
       </div>
-      <div>
-        <div id="file-write-btn">Start File Write</div>
-        <div id="predict-btn">Record Sample</div>
-        <div id="switch-act-btn">Switch</div>
+      <div class="btn-bar">
+        <div class="show-btn" id="file-write-btn">Start File Write</div>
+        <div class="show-btn" id="predict-btn">Record Sample</div>
+        <div class="show-btn" id="switch-act-btn">Switch</div>
+        <a href="/web/explain.html"><div class="show-btn" id="explain">Explain</div></a>
+      </div>
+      <div class="instructions">
+        <h3>Instructions</h3>
+        <p>The <span class="highlight1">switch</span> button toggles <span class="highlight2">start write file</span> and 
+          <span class="highlight3">record and sample</span>. <span class="highlight2">start write file</span>
+          allows you to record a sample of the spectrogram, and will be written into a text file and downloaded. 
+          <span class="highlight3">record and sample</span> will record you, then sample from the selcted recording
+          time frame, then process the data to output a prediction. The browser will save your latest sample recorded, and
+          you can proceed to the <span class="highlight4">explain</span> button to see how the TDNN model processed the spectrogram
+          to produce the result.</p>
       </div>
     </div>
-    <div class="content-wrapper">
+    <div class="body-wrapper-index">
+      <div class="spectrograms">
+        <div class="spectrogram-wrapper" id="main-spectrogram">
+          <g-spectrogram controls labels log oscillator ></g-spectrogram>
+        </div>
+        <div>
+        <div class="spectrogram-wrapper-mini" id="mini-spectrogram">
+          <g-spectrogram-mini controls labels log oscillator speed="10"></g-spectrogram>
+        </div>
+      </div>
       <div class="predictions">
         Predictions 
-        <div class="pred-wrapper-wrapper">
+        <div class="pred-outer-wrapper">
           <ul class="pred-wrapper">
-            <li>
-              <div id="pred1"></div>
-              b
-            </li>
-            <li>
-              d
-              <div id="pred2"></div>
-            </li>
-            <li>
-              g
-              <div id="pred3"></div>
-            </li>
-            <li>
-              null
-              <div id="pred4"></div>
-            </li>
+            <li>b<div id="pred1"></div></li>
+            <li>d<div id="pred2"></div></li>
+            <li>g<div id="pred3"></div></li>
+            <!-- <li>null<div id="pred4"></div></li> -->
           </ul>
           </div>
-          <div class="predClass-wrapper">
-            prediction:
-            <span id="predClass"></span>
+          <div class="pred-class-wrapper">
+            prediction: <span id="predClass"></span>
           </div>
-        </div>
-      </div>
-      <div class="spectrogram-wrapper-wrapper" id="main-spectrogram">
-        <div class="spectrogram-wrapper">
-          <g-spectrogram controls labels log oscillator></g-spectrogram>
         </div>
       </div>
     </div>
-    <div>
-      <div class="spectrogram-wrapper-wrapper-2" id="mini-spectrogram">
-        <div class="spectrogram-wrapper-2">
-          <g-spectrogram-mini controls labels log oscillator></g-spectrogram>
-        </div>
-      </div>
     </div>
   </body>
 </html>

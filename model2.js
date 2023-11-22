@@ -146,7 +146,7 @@ model.add(tf.layers.conv1d({inputShape: [15, 16],
                             // dataFormat: 'channelsFirst'
                             // bias term ?
                             }));
-console.log(tdnn1Weight.shape, tdnn1Bias.shape);
+// console.log(tdnn1Weight.shape, tdnn1Bias.shape);
 
 model.layers[0].setWeights([tdnn1Weight, tdnn1Bias]);
 
@@ -183,11 +183,7 @@ model.layers[5].setWeights([linearWeight, linearBias]);
  * =====================================================
  */
 model.compile({loss: 'categoricalCrossentropy', optimizer: 'sgd'});
-  
 
-console.log('linear weight', linearWeight.dataSync());
-console.log('linear bias', linearBias.dataSync());
-console.log(model.layers[5].bias);
 
 /** =====================================================
  *           TESTING THE MODEL PLS REMOVE LATER
@@ -201,148 +197,148 @@ console.log(model.layers[5].bias);
 // var y = model.predict(dataTensorNormed, {batchSize: 1});
 // console.log(y.dataSync);
 
-console.log('something is working at least');
-var files;
-var samples = [];
-var samples_tensors = [];
-var num_files;
-document.getElementById("filepicker").addEventListener("change", function(event) {
-  files = event.target.files;
-  console.log('something changed');
-  console.log(files);
-}, false);
+// console.log('something is working at least');
+// var files;
+// var samples = [];
+// var samples_tensors = [];
+// var num_files;
+// document.getElementById("filepicker").addEventListener("change", function(event) {
+//   files = event.target.files;
+//   console.log('something changed');
+//   console.log(files);
+// }, false);
 
-document.getElementById('submit').onclick = () => {
-    console.log('clicked');
-    var file_list = files;
-    let promises = [];
-    for (let file of file_list) {
-        let filePromise = new Promise(resolve => {
-            let reader = new FileReader();
-            reader.readAsText(file);
-            reader.onload = () => resolve(reader.result);
-        });
-        promises.push(filePromise);
-    }
+// document.getElementById('submit').onclick = () => {
+//     console.log('clicked');
+//     var file_list = files;
+//     let promises = [];
+//     for (let file of file_list) {
+//         let filePromise = new Promise(resolve => {
+//             let reader = new FileReader();
+//             reader.readAsText(file);
+//             reader.onload = () => resolve(reader.result);
+//         });
+//         promises.push(filePromise);
+//     }
 
-    Promise.all(promises).then(fileContents => {
-        // fileContents will be an array containing
-        // the contents of the files, perform the
-        // character replacements and other transformations
-        // here as needed
-        console.log(fileContents.length);
-        num_files = fileContents.length;
-        for (let i = 0; i < fileContents.length; i++) {
-            var file = fileContents[i];
-            const rows = file.split("\n");
-            for (let j = 0; j < rows.length - 1; j++) {
-                rows[j] = rows[j].split(",");
-                for (let k = 0; k < rows[j].length; k ++){
-                    // console.log(rows[j][k])
-                    rows[j][k] = Number(rows[j][k]);
-                }
-            }
-            samples.push(rows);
-            // console.log('1', samples);
-        }
+//     Promise.all(promises).then(fileContents => {
+//         // fileContents will be an array containing
+//         // the contents of the files, perform the
+//         // character replacements and other transformations
+//         // here as needed
+//         console.log(fileContents.length);
+//         num_files = fileContents.length;
+//         for (let i = 0; i < fileContents.length; i++) {
+//             var file = fileContents[i];
+//             const rows = file.split("\n");
+//             for (let j = 0; j < rows.length - 1; j++) {
+//                 rows[j] = rows[j].split(",");
+//                 for (let k = 0; k < rows[j].length; k ++){
+//                     // console.log(rows[j][k])
+//                     rows[j][k] = Number(rows[j][k]);
+//                 }
+//             }
+//             samples.push(rows);
+//             // console.log('1', samples);
+//         }
 
-        for (let j = 0; j < samples.length; j ++){
-            let data = samples[j];
-            // console.log(data);
+//         for (let j = 0; j < samples.length; j ++){
+//             let data = samples[j];
+//             // console.log(data);
      
-            // sum columns
-            var matrix = data
-            const numRows = matrix.length;
-            const numCols = matrix[0].length; // Assuming all rows have the same number of columns
+//             // sum columns
+//             var matrix = data
+//             const numRows = matrix.length;
+//             const numCols = matrix[0].length; // Assuming all rows have the same number of columns
         
-            const columnSums = new Array(numCols).fill(0);
+//             const columnSums = new Array(numCols).fill(0);
         
-            // console.log(numCols, numRows);
-            for (let col = 0; col < numCols; col++) {
-              for (let row = 0; row < numRows; row++) {
-                if(matrix[row][col] == undefined){
-                    continue;
-                }
-                columnSums[col] += 10**(matrix[row][col]);
-              }
-            }
-            // console.log(columnSums);
-            // custom max
-            if (columnSums.length === 0) {
-              return undefined; // Return undefined if no columnSums are provided
-            }
-            let max = -Infinity; // Start with a very low value
-            for (let i = 1; i < columnSums.length; i++) {
-              if (columnSums[i] > max) {
-                max = columnSums[i];
-              }
-            }
-            // console.log(max);
-            // normalize
-            var array_2 = Array(columnSums);
-            for(var i = 0, length = columnSums.length; i < length; i++){
-                array_2[i] = columnSums[i] / max;
-            }
-            // console.log(array_2);
-            // find max
-            const thresh_indexes = [];
-            for (let i = 2; i < array_2.length; i++) {
-              if (array_2[i] > 0.3) {
-                thresh_indexes.push(i);
-              }
-            }
+//             // console.log(numCols, numRows);
+//             for (let col = 0; col < numCols; col++) {
+//               for (let row = 0; row < numRows; row++) {
+//                 if(matrix[row][col] == undefined){
+//                     continue;
+//                 }
+//                 columnSums[col] += 10**(matrix[row][col]);
+//               }
+//             }
+//             // console.log(columnSums);
+//             // custom max
+//             if (columnSums.length === 0) {
+//               return undefined; // Return undefined if no columnSums are provided
+//             }
+//             let max = -Infinity; // Start with a very low value
+//             for (let i = 1; i < columnSums.length; i++) {
+//               if (columnSums[i] > max) {
+//                 max = columnSums[i];
+//               }
+//             }
+//             // console.log(max);
+//             // normalize
+//             var array_2 = Array(columnSums);
+//             for(var i = 0, length = columnSums.length; i < length; i++){
+//                 array_2[i] = columnSums[i] / max;
+//             }
+//             // console.log(array_2);
+//             // find max
+//             const thresh_indexes = [];
+//             for (let i = 2; i < array_2.length; i++) {
+//               if (array_2[i] > 0.3) {
+//                 thresh_indexes.push(i);
+//               }
+//             }
         
-            let start_time_ms = thresh_indexes[0]*10 - 20;
-            // console.log('start time', start_time_ms);
+//             let start_time_ms = thresh_indexes[0]*10 - 20;
+//             // console.log('start time', start_time_ms);
     
-            // to capture onset in msec
+//             // to capture onset in msec
     
-            var start_frame = start_time_ms / 10;
-            var currDat = tf.tensor(data);
-            var the_dat = currDat.slice([0, start_frame -1 ], [16, 15]);
-            var dataTensor = the_dat; // no transpose
-            samples_tensors.push(dataTensor);
+//             var start_frame = start_time_ms / 10;
+//             var currDat = tf.tensor(data);
+//             var the_dat = currDat.slice([0, start_frame -1 ], [16, 15]);
+//             var dataTensor = the_dat; // no transpose
+//             samples_tensors.push(dataTensor);
             
-        }
-        let dataTensors = tf.stack(samples_tensors);
-        tf.print(dataTensors);
-        console.log('sample_tensors', samples_tensors.shape);
-        console.log('dataTensors shape, mean shape, std shape', dataTensors.shape, mean.shape, std.shape);
-        var subbed = tf.sub(dataTensors, mean);
-        var dataTensorNormed = tf.div(subbed, std);
+//         }
+//         let dataTensors = tf.stack(samples_tensors);
+//         tf.print(dataTensors);
+//         console.log('sample_tensors', samples_tensors.shape);
+//         console.log('dataTensors shape, mean shape, std shape', dataTensors.shape, mean.shape, std.shape);
+//         var subbed = tf.sub(dataTensors, mean);
+//         var dataTensorNormed = tf.div(subbed, std);
 
-        var dataTensorNormedTransposed = tf.transpose(dataTensorNormed, [0, 2, 1]);
-        tf.print(dataTensorNormedTransposed);
-        var y = model.predict(dataTensorNormedTransposed, {batchSize: 1}); // predicting the model
+//         var dataTensorNormedTransposed = tf.transpose(dataTensorNormed, [0, 2, 1]);
+//         tf.print(dataTensorNormedTransposed);
+//         var y = model.predict(dataTensorNormedTransposed, {batchSize: 1}); // predicting the model
 
-        var y_arr  = Array.from(y.dataSync());
-        var the_str = "";
-        console.log(typeof(y.dataSync));
-        for(let i=0; i < y_arr.length; i += 3) {
-            the_str = the_str + y_arr[i]+ ","+ y_arr[i+1]+ ","+ y_arr[i + 2]+ "\n";
-            console.log( y_arr[i]+ ","+ y_arr[i+1]+ ","+ y_arr[i + 2]+ "\n")
-        }
-        console.log(the_str);
-        document.getElementById('class34').innerHTML = the_str;
-        var normed_y = tf.add(tf.div(tf.sub(y, y.mean()), 20), 0.5);
-        // tf.image.resize(normed_y, [100, 100]);
-        tf.print(normed_y);
-        tf.browser.toPixels(normed_y, document.getElementsByTagName("canvas")[0]);
-    });
-}
+//         var y_arr  = Array.from(y.dataSync());
+//         var the_str = "";
+//         console.log(typeof(y.dataSync));
+//         for(let i=0; i < y_arr.length; i += 3) {
+//             the_str = the_str + y_arr[i]+ ","+ y_arr[i+1]+ ","+ y_arr[i + 2]+ "\n";
+//             console.log( y_arr[i]+ ","+ y_arr[i+1]+ ","+ y_arr[i + 2]+ "\n")
+//         }
+//         console.log(the_str);
+//         document.getElementById('class34').innerHTML = the_str;
+//         var normed_y = tf.add(tf.div(tf.sub(y, y.mean()), 20), 0.5);
+//         // tf.image.resize(normed_y, [100, 100]);
+//         tf.print(normed_y);
+//         tf.browser.toPixels(normed_y, document.getElementsByTagName("canvas")[0]);
+//     });
+// }
 
-document.getElementById('single').addEventListener('click', function(){
-  console.log('lmfoa');
-  var arr = Array(16).fill().map(() => Array(15).fill(0));
-  arr[10][9] = 1
-  console.log(arr);
-  var single_sample = tf.tensor(arr);
-  single_sample = tf.transpose(single_sample, [1, 0]);
-  console.log(single_sample.shape);
-  var single_sample_set = tf.expandDims(single_sample, 0)
-  console.log('single sample set shape', single_sample_set.shape);
-  var y = model.predict(single_sample_set, {batchSize: 1});
-  console.log('predicted values (y)');
-  tf.print(y);
-  document.getElementById('class34').innerHTML = y;
-});
+// document.getElementById('single').addEventListener('click', function(){
+//   console.log('lmfoa');
+//   var arr = Array(16).fill().map(() => Array(15).fill(0));
+//   arr[10][9] = 1
+//   console.log(arr);
+//   var single_sample = tf.tensor(arr);
+//   single_sample = tf.transpose(single_sample, [1, 0]);
+//   console.log(single_sample.shape);
+//   var single_sample_set = tf.expandDims(single_sample, 0)
+//   console.log('single sample set shape', single_sample_set.shape);
+//   var y = model.predict(single_sample_set, {batchSize: 1});
+//   console.log('predicted values (y)');
+//   tf.print(y);
+//   document.getElementById('class34').innerHTML = y;
+// });

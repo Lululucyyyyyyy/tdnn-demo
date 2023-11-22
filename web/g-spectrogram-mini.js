@@ -18,6 +18,8 @@ Polymer('g-spectrogram-mini', {
   file_download: true,
   thresh: 0.3,
   start_time_ms: -1,
+  explaining: false,
+  dataTensorNormed: tf.zeros([16, 15]),
 
   // current data, 15 frames of 16 frequency bins
   currDat: tf.zeros([16, 15], dtype='float32'),
@@ -147,10 +149,16 @@ Polymer('g-spectrogram-mini', {
     });
   },
 
+  storeData: async function(){
+    localStorage.setItem("currDat", self.currDat);
+    localStorage.setItem("dataTensorNormed", self.dataTensorNormed);
+    console.log('stored');
+    // return (self.currDat, self.dataTensorNormed);
+  },
+
   predictModel: async function(data){
     // converts from a canvas data object to a tensor
 
-    console.log('berfore', this.start_time_ms);
     this.start_time_ms = -1;
  
     // sum columns
@@ -197,7 +205,6 @@ Polymer('g-spectrogram-mini', {
     this.start_time_ms = start_time_ms;
 
     // const start_time_ms = await this.findMaxFreq(data);
-    console.log('after', this.start_time_ms);
     start_time_ms = this.start_time_ms;
     var start_frame = start_time_ms / 10;
     var the_dat = this.currDat.slice([0, start_frame], [16, 15]);
@@ -219,6 +226,7 @@ Polymer('g-spectrogram-mini', {
     // mean and std transformation
     var subbed = tf.sub(dataTensor, mean);
     var dataTensorNormed = tf.div(subbed, std);
+    self.dataTensorNormed = dataTensorNormed;
     var dataTensorNormedTransposed = tf.transpose(dataTensorNormed, [0, 2, 1]);
 
     if (print == true){
@@ -229,15 +237,28 @@ Polymer('g-spectrogram-mini', {
     
     // gets model prediction
     var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
+    y = y.dataSync()
+    var max_y = Math.max.apply(null, y);;
+    var min_y = Math.min.apply(null, y);
+    var y_scaled = [0, 0, 0];
+    for (i=0; i<3; i++){
+      y_scaled[i] = (y[i] - min_y) / max_y;
+    }
+    // console.log(y, max_y, y_scaled);
     
     // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
-    document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
-    document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
-    document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
+    document.getElementById('pred1').style = "height: "+y_scaled[0] * 10 +"vh";
+    document.getElementById('pred2').style = "height: "+y_scaled[1] * 10 +"vh";
+    document.getElementById('pred3').style = "height: "+y_scaled[2] * 10 +"vh";
+    // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
+
+    localStorage.setItem("currDat", the_dat.arraySync());
+    localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
+    localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
+    // console.log('stored');
 
     const classes = ["b", "d", "g", "null"];
-    var predictedClass = tf.argMax(y.dataSync()).array()
+    var predictedClass = tf.argMax(y).array()
     .then(predictedClass => {
       document.getElementById("predClass").innerHTML = classes[predictedClass];
       // if(predictedClass != 3){

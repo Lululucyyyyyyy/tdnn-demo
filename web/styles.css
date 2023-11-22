@@ -1,4 +1,14 @@
+
+/* =============== Global basics  =============== */
+
 html, body {margin: 0; height: 100%; overflow: hidden}
+
+:root {
+  --c1: #81F4E1;
+  --c2: #56CBF9;
+  --c3: #FF729F;
+  --c4: #D3C4D1;
+}
 
 body{
 	color: black;
@@ -12,58 +22,25 @@ header{
 	justify-content: center;
 }
 
-/* .on-start-wrapper{
-  display: none;
-} */
-
-.spectrogram-wrapper-wrapper{
-  display: flex;
-  width: 50%;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid black;
-  position: absolute;
-  top: 50vh;
-  left: 1vh;
-  height: 45vh;
+p{
+  font-size: 16px;
+  line-height: 24px;
 }
 
-.spectrogram-wrapper-wrapper-2{
-  display: flex;
-  width: 40%;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid red;
-  position: absolute;
-  top: 10vh;
-  left: 1vh;
-  height: 25vh;
+a{
+  all: none;
+  color: black;
+  text-decoration: none;
 }
 
-.spectrogram-wrapper{
-  /* border: 1px solid red; */
-  position: absolute;
-  width: 100%;
-  top: 0vh;
-  left: 0%;
-  height: 45vh;
-}
 
-.spectrogram-wrapper-2{
-  /* border: 1px solid red; */
-  position: absolute;
-  width: 100%;
-  top: 0vh;
-  left: 0%;
-  height: 25vh;
-}
+/* =============== Global Wrapper  =============== */
 
 .header-wrapper{
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  /* border: 1px solid red; */
   width: 100%;
 }
 
@@ -74,13 +51,140 @@ header{
   flex-direction: column;
 }
 
-.pred-wrapper {
-  display: grid;
-  grid-template-columns: auto; /* The default, but best to be explicit */
-  gap: 0.5rem 0;
-  grid-auto-columns: 1fr;
+.btn-bar{
+  display: flex;
+  flex-direction: row;
+  padding: 2%;
+}
+
+/* =============== Global Buttons  =============== */
+
+.show-btn{
+  padding: 5px 10px;
+  border-radius: 10px;
+  margin: 10px;
+  width: 200px;
+  display: flex;
   align-items: center;
-  justify-content: bottom;
+  justify-content: center;
+}
+/* ============================================= */
+/* ================= INDEX.HTML  =============== */
+/* ============================================= */
+
+/* ================= buttons ==================== */
+
+
+#file-write-btn{
+  border: 3px solid var(--c2);
+  padding: 5px 10px;
+  border-radius: 10px;
+  width: 150px;
+  color: var(--c2)
+}
+
+#predict-btn{
+  border: 3px solid var(--c3);
+  padding: 5px 10px;
+  border-radius: 10px;
+  display: none;
+  width: 150px;
+  color: var(--c3)
+}
+
+#switch-act-btn{
+  border: 3px solid var(--c1);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c1);
+}
+
+#explain{
+  border: 3px solid var(--c4);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c4);
+}
+
+/* ================= wrappers ==================== */
+
+.instructions{
+  text-align: center;
+  width: 75%;
+}
+
+.body-wrapper-index{
+  display: flex;
+  flex-direction: row;
+  align-items: left;
+  justify-content: left;
+}
+
+/* ================= text ==================== */
+
+span.highlight1{
+  color: var(--c1);
+}
+
+span.highlight2{
+  color: var(--c2);
+}
+
+span.highlight3{
+  color: var(--c3);
+}
+
+span.highlight4{
+  color: var(--c4);
+}
+
+/* ================= spectrogram ==================== */
+
+.spectrogram-wrapper{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spectrogram-wrapper-mini{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spectrograms{
+  width: 0%;
+  height: 35vh;
+  /* border: 3px solid turquoise; */
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: left;
+}
+
+/* ================= predictions ==================== */
+
+.predictions{
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  flex-direction: column;
+  border: 3px solid black;
+  width: 60vh;
+  margin: 50px;
+  margin-left: 55vw;
+}
+
+.pred-outer-wrapper{
+  display: flex;
+}
+
+.pred-wrapper{
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  flex-direction: row;
+  height: 40vh;
 }
 
 .pred-wrapper > li {
@@ -91,79 +195,48 @@ header{
   /* justify-content: space-between; */
   padding: 0.25rem 0.5rem;
   /* grid-column-start: 1; */
-  /* border: 1px solid red; */
+  /* border: 3px solid red; */
   height: 100%;
   width: 10vh;
 }
 
 #pred1{
-  background-color: #fe4e4e;
+  background-color: var(--c1);
   width: 10vh;
   height: 1vh;
-  bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  position: absolute;
 }
 
 #pred2{
-  background-color: #ee5397;
+  background-color: var(--c2);
   width: 10vh;
   height: 1vh;
-  bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  position: absolute;
+  
 }
 
 #pred3{
-  background-color: #3466a5;
+  background-color: var(--c3);
   width: 10vh;
   height: 1vh;
-  bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  position: absolute;
+  
 }
 
 #pred4{
-  background-color: #00c4d4;
+  background-color: var(--c4);
   width: 10vh;
   height: 1vh;
-  bottom: bottom;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  position: absolute;
+  
 }
 
-.pred-wrapper{
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  flex-direction: row;
-  height: 40vh;
-  /* border: 1px solid red; */
-}
-
-.predictions{
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  flex-direction: column;
-  border: 1px solid black;
-  width: 60vh;
-  right: 5vh;
-  position: absolute;
-  top: 40vh;
-}
-
-.pred-wrapper-wrapper{
-  display: flex;
-  /* border: 1px solid red; */
-}
-
-.predClass-wrapper{
-  position: absolute;
+.pred-class-wrapper{
+  
   align-items: left;
   text-align: left;
   width: 25vh;
@@ -171,35 +244,99 @@ header{
   bottom: -5vh;
 }
 
-.content-wrapper{
+
+
+
+/* ============================================= */
+/* =============== EXPLAIN.HTML  =============== */
+/* ============================================= */
+
+
+/* =============== basics  =============== */
+
+#final-explanation{
   display: flex;
+  align-items: left;
+  justify-content: center;
+  padding: 25px;
 }
 
-#file-write-btn{
-  border: 1px solid black;
-  padding: 5px 10px;
-  border-radius: 10px;
-  right: 20%;
-  position: absolute;
+/* =============== wrappers  =============== */
+
+.explain-body-wrapper{
+  display: flex;
+  flex-direction: row;
+  align-items: left;
+  justify-content: left;
+  padding-left: 4%;
+  padding-right: 4%;
 }
 
-#predict-btn{
-  border: 1px solid black;
-  padding: 5px 10px;
-  border-radius: 10px;
-  right: 20%;
-  position: absolute;
+
+#return{
+  border: 3px solid var(--c4);
+  color: var(--c4);
+}
+
+#normed{
+  border: 3px solid var(--c1);
+  color: var(--c1);
+}
+
+#tdnn1{
+  border: 3px solid var(--c2);
   display: none;
+  color: var(--c2);
 }
 
-#switch-act-btn{
-  border: 1px solid black;
-  padding: 5px 10px;
-  border-radius: 10px;
-  right: 30%;
-  position: absolute;
+#tdnn2{
+  display: none;
+  border: 3px solid var(--c3);
+  color: var(--c3);
 }
 
-canvas{
-  border: 1px solid red;
+#flatten{
+  display: none;
+  border: 3px solid var(--c1);
+  color: var(--c1);
+}
+
+#linear{
+  display: none;
+  border: 3px solid var(--c2);
+  color: var(--c2);
+}
+
+#final{
+  display: none;
+  border: 3px solid var(--c3);
+  color: var(--c3);
+}
+
+/* =============== plot containers  =============== */
+
+.plot-container{
+  padding: 1%;
+  /* border: 3px solid black; */
+  width: 50%;
+}
+
+#plot-container1, #plot-container2{
+  width: 30%;
+  height: 300px;
+}
+
+#plot-container3, #plot-container4{
+  width: 20%;
+  height: 300px;
+}
+
+#plot-container5, #plot-container6{
+  width: 15%;
+  height: 300px;
+}
+
+#plot-container7, #plot-container8{
+  width: 100%;
+  height: 100px;
 }
