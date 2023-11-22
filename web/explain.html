@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="bower_components/platform/platform.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="import" href="g-spectrogram.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="../model2.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-heatmap.min.js"></script> 
+    <script src="explain.js"></script>
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header-content">
+        <h2>Time-Delay Neural Network Demo</h2>
+      </div>
+      <div class="btn-bar">
+        <a href="/web/"><div id="return" class="show-btn">Return</div></a>
+        <div id="normed" class="show-btn">Show Normalized Data</div>
+        <div id="tdnn1" class="show-btn">Show TDNN 1</div>
+        <div id="tdnn2" class="show-btn">Show TDNN 2</div>
+        <div id="flatten" class="show-btn">Show Flatten</div>
+        <div id="linear" class="show-btn">Show Linear</div>
+        <div id="final" class="show-btn">Show Final</div>
+      </div>
+    </div>
+    <div class="explain-body-wrapper">
+        <div id="plot-container1" class="plot-container"></div>
+        <div id="plot-container2" class="plot-container"></div>
+        <div id="plot-container3" class="plot-container"></div>
+        <div id="plot-container4" class="plot-container"></div>
+    </div>
+    <div class="explain-body-wrapper">
+        <div id="plot-container5" class="plot-container"></div>
+        <div id="plot-container6" class="plot-container"></div>
+        <div class="plot-container">
+            <div class="plot-container" id="plot-container7" ></div>
+            <div class="plot-container" id="plot-container8" ></div>
+            <div id="final-explanation"></div>
+        </div>
+        </div>
+    </div>
+  </body>
+</html>

@@ -90,10 +90,10 @@ Polymer('g-spectrogram', {
     var y = model.predict(dataTensorNormed, {batchSize: 1});
     
     // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
-    document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
-    document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
-    document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
+    // document.getElementById('pred1').style = "height: "+y.dataSync()[0] * 10 +"vh";
+    // document.getElementById('pred2').style = "height: "+y.dataSync()[1] * 10 +"vh";
+    // document.getElementById('pred3').style = "height: "+y.dataSync()[2] * 10 +"vh";
+    // document.getElementById('pred4').style = "height: "+y.dataSync()[3] * 10 +"vh";
 
     const classes = ["b", "d", "g", "null"];
     var predictedClass = tf.argMax(y.dataSync()).array()
