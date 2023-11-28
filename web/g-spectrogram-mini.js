@@ -242,7 +242,7 @@ Polymer('g-spectrogram-mini', {
     var min_y = Math.min.apply(null, y);
     var y_scaled = [0, 0, 0];
     for (i=0; i<3; i++){
-      y_scaled[i] = (y[i] - min_y) / max_y;
+      y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
     }
     // console.log(y, max_y, y_scaled);
     
@@ -285,6 +285,31 @@ Polymer('g-spectrogram-mini', {
     } catch (e) {
       this.onStreamError(e);
     }
+  },
+
+  doneTimer: function() {
+    console.log("1s pause");
+    this.writing = false;
+    this.color = false;
+    console.log('after timeout')
+    console.log(this.writing, this.color);
+    console.log(this.currDat);
+    var link = document.createElement('a');
+    var data_pre = this.currDat.arraySync();
+    console.log('currDat arraysync', currDat.arraySync());
+    var str = "";
+    for (row in data_pre) {
+      str += data_pre[row].toString();
+      str += '\n';
+    }
+    var data = new Blob([str], {type: 'text/plain'});
+    console.log(data);
+    textFile = window.URL.createObjectURL(data);
+    console.log('File written successfully to', textFile);
+    link.href = textFile;
+    link.download = "data.txt";
+    link.click();
+    document.getElementById('file-write-btn').innerHTML = "Start File Write";
   },
 
   render: function() {
@@ -336,19 +361,18 @@ Polymer('g-spectrogram-mini', {
 
     if(this.file_download){
       document.getElementById('file-write-btn').onclick = () => {
-        if (this.writing == false){
-          this.currDat = tf.zeros([16, 1], dtype='float32');
-          this.writing = true;
-          document.getElementById('file-write-btn').innerHTML = "Stop File Write";
-        } else {
+        this.currDat = tf.zeros([16, 1], dtype='float32');
+        this.writing = true;
+        this.color = true;
+        document.getElementById('file-write-btn').innerHTML = "Writing...";
+        
+        setTimeout(() => {
           this.writing = false;
+          this.color = false;
           var link = document.createElement('a');
-          var data_pre = currDat.arraySync();
+          var data_pre = this.currDat.arraySync();
           var str = "";
           for (row in data_pre) {
-            // if (Array.isArray(item)) str += printArr(item);
-            // else str += item + ", ";
-            // console.log(data_pre[row]);
             str += data_pre[row].toString();
             str += '\n';
           }
@@ -360,7 +384,8 @@ Polymer('g-spectrogram-mini', {
           link.download = "data.txt";
           link.click();
           document.getElementById('file-write-btn').innerHTML = "Start File Write";
-        }
+        }, 1000);
+
       }
 
       if(this.writing){
@@ -369,6 +394,7 @@ Polymer('g-spectrogram-mini', {
         currCol = tf.transpose(tf.tensor([currCol]));
         var currDat = tf.concat([this.currDat, currCol], 1);
         this.currDat = currDat;
+        // console.log('376', this.currDat);
         // this.predictModel();
       }
     } else {

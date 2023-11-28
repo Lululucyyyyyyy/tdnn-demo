@@ -285,6 +285,8 @@ def display(path):
 	'''
 	given a path to file, displays the spectrogram
 	'''
+	transpose = False
+	already_list = False
 	spectrogram = []
 	with open(path, 'r') as f:
 		if (already_list):
