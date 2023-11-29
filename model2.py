@@ -26,6 +26,7 @@ class TDNNv2(nn.Module):
     - sigmoid after tdnn
     - flatten: 9 frequencies, 3 out channels, flattens to (27, ) array
     - linear: 27 inputs, 4 outputs
+    - sigmoid after final layer
     '''
 
     def __init__(self):
@@ -37,6 +38,7 @@ class TDNNv2(nn.Module):
         self.sigmoid2 = nn.Sigmoid()
         self.flatten = nn.Flatten()
         self.linear = nn.Linear(27, 3)
+        self.sigmoid3 = nn.Sigmoid()
         self.network = nn.Sequential(
             self.tdnn1,
             self.sigmoid1,
@@ -44,6 +46,7 @@ class TDNNv2(nn.Module):
             self.sigmoid2,
             self.flatten,
             self.linear,
+            # self.sigmoid3,
         )
 
     def forward(self, x):
@@ -57,9 +60,14 @@ def parse_arguments():
                         default=0, help="Number of frames to shift")
     parser.add_argument('--verbose', dest="verbose", type=bool,
                         default=False, help="print useless stuffs")
+    parser.add_argument('--save', dest='save', type=bool,
+                        default=False, help="save parameters>")
+    parser.add_argument('--path_num', dest='path_num', type=int,
+                        default=0, help="which model param path to save to")
     return parser.parse_args()
 
 args = parse_arguments()
+num_epochs = 350
 
 def load_and_process_data():
     '''
@@ -72,8 +80,9 @@ def load_and_process_data():
 
     load_dataset("dataset9/", data, data_labels, files, 9, 0)
     load_dataset("dataset9/other_data/", data, data_labels, files, 9, 0)
-    load_dataset_shifted("dataset9/", data, data_labels, files, 9, 0, args.shift)
-    load_dataset_shifted("dataset9/other_data/", data, data_labels, files, 9, 0, args.shift)
+    if args.shift != 0:
+        load_dataset_shifted("dataset9/", data, data_labels, files, 9, 0, args.shift)
+        load_dataset_shifted("dataset9/other_data/", data, data_labels, files, 9, 0, args.shift)
 
     assert(len(data) == len(data_labels) and len(data) == len(files))
 
@@ -81,9 +90,8 @@ def load_and_process_data():
     Data Processing
     '''
     
-    # test_length = int(len(data) * 0.1)
-    # train_length = len(data) - test_length
-    train_length = len(data)
+    test_length = int(len(data) * 0.1)
+    train_length = len(data) - test_length
     data_tensor = torch.Tensor(data) # turn into torch tensor
     eps = 10**-25 # avoid -inf in log
     # logged_data = 10 * torch.log10(data_tensor + eps) 
@@ -108,10 +116,10 @@ def load_and_process_data():
     files_tensor = torch.tensor(files_int_labels)
     whole_dataset = TensorDataset(normed_data, labels_tensor, files_tensor)
 
-    # train_dataset, test_dataset = torch.utils.data.random_split(whole_dataset, [train_length, test_length])
-    batch_size = len(data) // 10
+    train_dataset, test_dataset = torch.utils.data.random_split(whole_dataset, [train_length, test_length])
+    batch_size = len(data) // 20
     num_batches = train_length // batch_size
-    train_loader = DataLoader(whole_dataset, batch_size=batch_size, shuffle=True) # create dataloader object
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) # create dataloader object
 
     print("dataset done loading; loaded total of ", len(data), "samples")
     print(sum([0 if x != 0 else 1 for x in data_labels]), "b's, label:0")
@@ -134,25 +142,7 @@ def load_and_process_data():
         load_dataset("dataset9/", data_test, data_labels_test, files_test, 9, 0)
         load_dataset("dataset9/other_data/", data_test, data_labels_test, files_test, 9, 0)
 
-    test_length = len(data_test)
-    data_tensor_test = torch.Tensor(data_test) # turn into torch tensor
-    #data_tensor_test = torch.flatten(data_tensor_test, start_dim=1, end_dim=2)
-    # normalize
-    std_test = torch.std(data_tensor_test, 0)
-    mean_test = torch.mean(data_tensor_test, 0)
-    normed_data_test = (data_tensor_test - mean_test)/std_test # normalize 
-
-    files_dict = {}
-    files_int_labels = []
-    for i in range(len(files)):
-        files_dict[i] = files[i]
-        files_int_labels.append(i)
-
-    files_tensor_test = torch.tensor(files_int_labels)
-
     # process labels and data loader
-    labels_tensor_test = torch.tensor(data_labels_test, dtype=torch.long)
-    test_dataset = TensorDataset(normed_data_test, labels_tensor_test, files_tensor_test)
     test_loader = DataLoader(test_dataset, batch_size=test_length, shuffle=True)
     return train_loader, test_loader, train_length, test_length, mean, std, files_dict
 
@@ -166,7 +156,6 @@ def train(train_loader, len_train_data):
     optimizer = optim.SGD(tdnn.parameters(), lr=10e-2, momentum=0.3) #weight_decay=0.01
 
     # hyperparameters
-    num_epochs = 500
     losses = []
 
     for epoch in range(num_epochs): 
@@ -235,7 +224,7 @@ def test(tdnn_test, test_loader, train_length, test_length, save_incorrect, inco
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-            #print(classification_report(labels, predicted))
+            print(classification_report(labels, predicted))
             if save_incorrect == True:
                 for i, x in enumerate(predicted):
                     if x != labels[i]:
@@ -274,8 +263,8 @@ test(trained_tdnn,
     test_loader, 
     len_train_data, 
     len_test_data, 
-    save_incorrect = False, 
-    incorect_examples_path = 'incorrect_examples/samples_015', 
+    save_incorrect = args.save, 
+    incorect_examples_path = 'incorrect_examples/samples_'+"{:03d}".format(args.path_num), 
     files_dict = files_dict)
 
 save_params(trained_tdnn, 
@@ -285,6 +274,6 @@ save_params(trained_tdnn,
             loss, 
             mean, 
             std, 
-            model_params_path = 'model_params/model_params_015')
+            model_params_path = 'model_params/model_params_'+"{:03d}".format(args.path_num))
 
 
