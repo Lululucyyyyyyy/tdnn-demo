@@ -12,27 +12,8 @@ Data Collection
 
 - run for more epochs
 
-
-
-
-1) Write your alignment code in Python.
-2) Do the test we discussed to see if the aligner performs as expected.
-3) Do you have more data recording planned?
-4) is modify your recording protocol to use automatic alignment.
-4.5) Rename the files so there are leading 0's. Moidify naming system in code too
-5) new experiment!! load + save weights in pytorch
-6) run whole sound file through model
-7) *andrew afs website hosting
-
-
-8) add new class to model (4th class being the non of the above option)
-9) look into how to spectrogram from wav via javascript
-10) look into webpage
-
-
-
-april 3, 2023
-changes to model
-- added pruning for null data to balance out the ratios
-- weight decay
-- batch size
+- model 15: model trained on bah buh and limited other words, using data from website, 500 epochs
+- model 16: new data only lucy, nov.28, with extra sigmoid layer, 500 epochs
+- model 17: same as model 16, except without extra sigmoid layer, 500 epochs
+- model 18: separate train and test data, otherwise same as 16
+- model 19: separate train and test data, otherwise same as 17

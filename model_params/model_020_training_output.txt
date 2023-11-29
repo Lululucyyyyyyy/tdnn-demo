@@ -1,0 +1,50 @@
+loading dataset9/
+loaded 60 samples (not including null files)
+loaded 60 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+dataset done loading; loaded total of  689 samples
+229 b's, label:0
+230 d's, label:1
+230 g's, label:2
+0 null vals, label:3
+number of training examples: 621
+batch size: 34 , number of batches: 18
+loading dataset9/
+loaded 60 samples (not including null files)
+loaded 60 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+0 loss: 0.03378868314187116
+25 loss: 0.03112314720660592
+50 loss: 0.02055691501752574
+75 loss: 0.015165497331419621
+100 loss: 0.010894230166495135
+125 loss: 0.008023570101234265
+150 loss: 0.005992282463924512
+175 loss: 0.004480405154243567
+200 loss: 0.0029526916954924327
+225 loss: 0.0023787834722062817
+250 loss: 0.0017384124946767006
+275 loss: 0.001295289822558658
+300 loss: 0.0010840959049125416
+325 loss: 0.0008566948519974659
+Finished Training 350 epochs
+Testing on 621 inputs (training data)
+Accuracy of the network on the train samples: 100 %
+Testing on 68 inputs
+              precision    recall  f1-score   support
+
+           0       0.78      0.95      0.86        19
+           1       0.84      0.64      0.73        25
+           2       0.81      0.88      0.84        24
+
+    accuracy                           0.81        68
+   macro avg       0.81      0.82      0.81        68
+weighted avg       0.81      0.81      0.80        68
+
+Accuracy of the network on the test samples: 80 %
+incorrect examples loaded into incorrect_examples/samples_020
+model parameters loaded into model_params/model_params_020

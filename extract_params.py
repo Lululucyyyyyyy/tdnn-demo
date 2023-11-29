@@ -37,6 +37,31 @@ class TDNNv1(nn.Module):
     out = self.network(x)
     return out
 
+class TDNNv2(nn.Module):
+    def __init__(self):
+        super(TDNNv2, self).__init__()
+
+        self.tdnn1 = TDNNLayer(16, 8, [-1,0,1])
+        self.sigmoid1 = nn.Sigmoid()
+        self.tdnn2 = TDNNLayer(8, 3, [-2,0,2])
+        self.sigmoid2 = nn.Sigmoid()
+        self.flatten = nn.Flatten()
+        self.linear = nn.Linear(27, 3)
+        self.sigmoid3 = nn.Sigmoid()
+        self.network = nn.Sequential(
+            self.tdnn1,
+            self.sigmoid1,
+            self.tdnn2,
+            self.sigmoid2,
+            self.flatten,
+            self.linear,
+            # self.sigmoid3,
+        )
+
+    def forward(self, x):
+        out = self.network(x)
+        return out
+    
 def parse_arguments():
     # Command-line flags are defined here.
     parser = ArgumentParser()

@@ -359,24 +359,18 @@ def unname_dataset(file_path, comp=True):
 	for f in sorted(os.listdir(file_path + "g")):
 		unname(file_path+"g/" + f, compare=comp)
 		
-def name(file_path, word):
+def name(file_path, word, start):
 	'''
 	names all files in file_path to word + i
 	'''
 	for i, f in enumerate(sorted(os.listdir(file_path))):
-		file_name = word + str(i) + ".txt"
+		file_name = word + str(start + i) + ".txt"
 		os.rename(file_path + f, file_path + file_name)
 
 
-# name("dataset9/naming/", "gap")
+# name("dataset9/naming/", "bait", 0)
 # for f in sorted(os.listdir("dataset9/naming/")):
 # 	extract_start_time("dataset9/naming/" + f, compare=False)
-# spectrogram_path = "dataset9/b/ba00001-300.txt"
-# already_list = False
-# transpose = False
-# display(spectrogram_path)
 
-# align_dataset("dataset3/spectrograms/")
-# align_dataset("dataset4/spectrograms/")
 # align_dataset("dataset9/")
 
