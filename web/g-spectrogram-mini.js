@@ -23,6 +23,7 @@ Polymer('g-spectrogram-mini', {
 
   // current data, 15 frames of 16 frequency bins
   currDat: tf.zeros([16, 15], dtype='float32'),
+  currDat2: tf.zeros([16, 1], dtype='float32'),
   sampledFreqs: [126.2,  275.2, 451.1, 
                   658.6, 903.6, 1192.8, 
                   1534.1, 2412.5, 2973.7, 
@@ -244,12 +245,12 @@ Polymer('g-spectrogram-mini', {
     for (i=0; i<3; i++){
       y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
     }
-    // console.log(y, max_y, y_scaled);
+    // console.log(y);
     
     // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y_scaled[0] * 10 +"vh";
-    document.getElementById('pred2').style = "height: "+y_scaled[1] * 10 +"vh";
-    document.getElementById('pred3').style = "height: "+y_scaled[2] * 10 +"vh";
+    document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
+    document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
+    document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
     // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
 
     localStorage.setItem("currDat", the_dat.arraySync());
@@ -282,34 +283,24 @@ Polymer('g-spectrogram-mini', {
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.ctx = this.$.canvas.getContext('2d');
       this.onStream(stream);
+       // predict every 200 ms
+      var date2 = Date.now();
+      setInterval(() => {
+        var data_pre = this.currDat2.arraySync();
+        this.predictModel(data_pre);
+        tf.print(this.currDat2);
+        // var date = Date.now();
+        // console.log(date - date2);
+        // date2 = date;
+        // console.log(this.currDat2.shape);
+        var longest_frames = 200;
+        if(this.currDat2.shape[1] > longest_frames){
+          this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
+        }
+      }, 200);
     } catch (e) {
       this.onStreamError(e);
     }
-  },
-
-  doneTimer: function() {
-    console.log("1s pause");
-    this.writing = false;
-    this.color = false;
-    console.log('after timeout')
-    console.log(this.writing, this.color);
-    console.log(this.currDat);
-    var link = document.createElement('a');
-    var data_pre = this.currDat.arraySync();
-    console.log('currDat arraysync', currDat.arraySync());
-    var str = "";
-    for (row in data_pre) {
-      str += data_pre[row].toString();
-      str += '\n';
-    }
-    var data = new Blob([str], {type: 'text/plain'});
-    console.log(data);
-    textFile = window.URL.createObjectURL(data);
-    console.log('File written successfully to', textFile);
-    link.href = textFile;
-    link.download = "data.txt";
-    link.click();
-    document.getElementById('file-write-btn').innerHTML = "Start File Write";
   },
 
   render: function() {
@@ -387,16 +378,6 @@ Polymer('g-spectrogram-mini', {
         }, 1000);
 
       }
-
-      if(this.writing){
-        // data
-        var currCol = this.extractFrequencies();
-        currCol = tf.transpose(tf.tensor([currCol]));
-        var currDat = tf.concat([this.currDat, currCol], 1);
-        this.currDat = currDat;
-        // console.log('376', this.currDat);
-        // this.predictModel();
-      }
     } else {
       // predicting
       var currCol = this.extractFrequencies();
@@ -419,6 +400,7 @@ Polymer('g-spectrogram-mini', {
       }
     }
 
+
     // this.renderTimeDomain();
     if (this.going){
       this.renderFreqDomain();
@@ -430,7 +412,14 @@ Polymer('g-spectrogram-mini', {
 
     setTimeout(() => {
       requestAnimationFrame(this.render.bind(this));
-    }, 0);
+      var currCol = this.extractFrequencies();
+      currCol = tf.transpose(tf.tensor([currCol]));
+      var currDat = tf.concat([this.currDat, currCol], 1);
+      this.currDat = currDat;
+
+      var currDat2 = tf.concat([this.currDat2, currCol], 1);
+      this.currDat2 = currDat2;
+    }, 10);
     
     var now = new Date();
     if (this.lastRenderTime_) {
