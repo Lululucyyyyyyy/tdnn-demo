@@ -248,16 +248,10 @@ Polymer('g-spectrogram-mini', {
     // console.log(y);
     
     // replaces the text in the result tag by the model prediction
-<<<<<<< HEAD
-    document.getElementById('pred1').style = "height: "+y_scaled[0] * 10 +"vh";
-    document.getElementById('pred2').style = "height: "+y_scaled[1] * 10 +"vh";
-    document.getElementById('pred3').style = "height: "+y_scaled[2] * 10 +"vh";
-=======
     document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
     document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
     document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
     // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
->>>>>>> main
 
     localStorage.setItem("currDat", the_dat.arraySync());
     localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
@@ -294,7 +288,7 @@ Polymer('g-spectrogram-mini', {
       setInterval(() => {
         var data_pre = this.currDat2.arraySync();
         this.predictModel(data_pre);
-        tf.print(this.currDat2);
+        // tf.print(this.currDat2);
         // var date = Date.now();
         // console.log(date - date2);
         // date2 = date;
