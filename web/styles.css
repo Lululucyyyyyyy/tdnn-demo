@@ -106,6 +106,13 @@ a{
   color: var(--c4);
 }
 
+#weight{
+  border: 3px solid var(--c3);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c3);
+}
+
 /* ================= wrappers ==================== */
 
 .instructions{
@@ -339,4 +346,113 @@ span.highlight4{
 #plot-container7, #plot-container8{
   width: 100%;
   height: 100px;
+}
+
+/* ============================================= */
+/* =============== WEIGHT.HTML  =============== */
+/* ============================================= */
+
+
+/* =============== wrappers  =============== */
+
+.weight-body-wrapper{
+  display: flex;
+}
+
+.weight-body-subwraper-1{
+  display: flex;
+  flex-direction: column;
+  margin-left: 2%;
+  margin-right: 2%;
+  border: 1px solid slateblue;
+  width: 30%;
+}
+
+.weight-body-subwraper-2{
+  display: flex;
+  border: 1px solid slateblue;
+}
+
+.weight-body-subwraper-3{
+  display: flex;
+  flex-direction: column;
+  margin-left: 2%;
+  margin-right: 2%;
+  border: 1px solid slateblue;
+  width: 20%;
+}
+
+.weight-body-subwraper-4{
+  display: flex;
+  border: 1px solid slateblue;
+}
+
+.weight-body-subwraper-5{
+  display: flex;
+  flex-direction: column;
+  margin-left: 2%;
+  margin-right: 2%;
+  border: 1px solid slateblue;
+  width: 50%;
+}
+
+.weight-body-subwraper-6{
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* =============== plot containers  =============== */
+
+.plot-container-2{
+  padding: 1%;
+  border: 1px solid black;
+  /* width: 50%; */
+}
+
+/*  TDNN Layer 1 Weights */
+#plot-container9, #plot-container10, #plot-container11, #plot-container12{
+  width: 25%;
+  height: 400px;
+}
+#plot-container13, #plot-container14, #plot-container15, #plot-container16{
+  width: 25%;
+  height: 400px;
+}
+
+/*  biases */
+#plot-container17, #plot-container18{
+  width: 80%;
+  height: 100px;
+}
+
+#plot-container19{
+  width: 50%;
+  height: 100px;
+}
+
+#plot-container20{
+  width: 8%;
+  height: 400px;
+}
+
+/*  TDNN Layer 2 Weights */
+#plot-container21, #plot-container22, #plot-container23{
+  width: 33%;
+  height: 400px;
+}
+
+#plot-container24, #plot-container25{
+  width: 100%;
+  height: 100px;
+}
+
+#plot-container26, #plot-container27{
+  width: 8%;
+  height: 50px;
+}
+
+#plot-container28, #plot-container29{
+  width: 8%;
+  height: 50px;
 }

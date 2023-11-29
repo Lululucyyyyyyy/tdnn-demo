@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="bower_components/platform/platform.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="import" href="g-spectrogram.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="../model19.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-heatmap.min.js"></script> 
+    <script src="display_weight.js"></script>
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header-content">
+        <h2>Time-Delay Neural Network Demo</h2>
+      </div>
+      <div class="btn-bar">
+        <a href="javascript:history.back()"><div id="return" class="show-btn">Return</div></a>
+        <!-- <div id="normed" class="show-btn">Show Normalized Data</div> -->
+      </div>
+    </div>
+    <div class="weight-body-wrapper">
+        <!-- tdnn layer 1 -->
+        <div class="weight-body-subwraper-1">
+            <div class="weight-body-subwraper-2">
+                <div id="plot-container9" class="plot-container-2"></div>
+                <div id="plot-container10" class="plot-container-2"></div>
+                <div id="plot-container11" class="plot-container-2"></div>
+                <div id="plot-container12" class="plot-container-2"></div>
+            </div>
+            <div class="weight-body-subwraper-2">
+                <div id="plot-container13" class="plot-container-2"></div>
+                <div id="plot-container14" class="plot-container-2"></div>
+                <div class="plot-container-2" id="plot-container15" ></div>
+                <div class="plot-container-2" id="plot-container16" ></div>
+            </div>
+            <div class="">
+                <div class="plot-container-2" id="plot-container17" ></div>
+            </div>
+        </div>
+        <!-- tdnn layer 2 -->
+        <div class="weight-body-subwraper-3">
+            <div class="weight-body-subwraper-4">
+                <div id="plot-container21" class="plot-container-2"></div>
+                <div id="plot-container22" class="plot-container-2"></div>
+                <div id="plot-container23" class="plot-container-2"></div>
+            </div>
+            <div class="">
+                <div class="plot-container-2" id="plot-container18" ></div>
+            </div>
+        </div>
+        <!-- linear weight -->
+        <div class="weight-body-subwraper-5">
+            <div id="plot-container24" class="plot-container-2"></div>
+            <div id="plot-container25" class="plot-container-2"></div>
+        </div>
+    </div>
+    
+
+        <!-- <div class="weight-body-subwraper-3">
+            <div id="plot-container26" class="plot-container-2"></div>
+            <div id="plot-container27" class="plot-container-2"></div>
+            <div id="plot-container28" class="plot-container-2"></div>
+        </div> -->
+
+  </body>
+</html>
