@@ -15,7 +15,7 @@ from sklearn.metrics import classification_report
 from mytools import *
 import argparse
 
-torch.manual_seed(0)
+# torch.manual_seed(0)
 
 class TDNNv2(nn.Module):
     '''
@@ -46,7 +46,7 @@ class TDNNv2(nn.Module):
             self.sigmoid2,
             self.flatten,
             self.linear,
-            # self.sigmoid3,
+            self.sigmoid3,
         )
 
     def forward(self, x):
@@ -67,7 +67,9 @@ def parse_arguments():
     return parser.parse_args()
 
 args = parse_arguments()
-num_epochs = 350
+num_epochs = 600
+learning_rate = 0.3
+momentum = 0.3
 
 def load_and_process_data():
     '''
@@ -80,9 +82,15 @@ def load_and_process_data():
 
     load_dataset("dataset9/", data, data_labels, files, 9, 0)
     load_dataset("dataset9/other_data/", data, data_labels, files, 9, 0)
-    if args.shift != 0:
+    # load_dataset("dataset10/allen/", data, data_labels, files, 10, 0)
+    while args.shift != 0:
+        # load_dataset("dataset10/allen/", data, data_labels, files, 10, args.shift)
+        # load_dataset("dataset10/allen/", data, data_labels, files, 10, -args.shift)
         load_dataset_shifted("dataset9/", data, data_labels, files, 9, 0, args.shift)
         load_dataset_shifted("dataset9/other_data/", data, data_labels, files, 9, 0, args.shift)
+        load_dataset_shifted("dataset9/", data, data_labels, files, 9, 0, -args.shift)
+        load_dataset_shifted("dataset9/other_data/", data, data_labels, files, 9, 0, -args.shift)
+        args.shift -= 1
 
     assert(len(data) == len(data_labels) and len(data) == len(files))
 
@@ -117,7 +125,7 @@ def load_and_process_data():
     whole_dataset = TensorDataset(normed_data, labels_tensor, files_tensor)
 
     train_dataset, test_dataset = torch.utils.data.random_split(whole_dataset, [train_length, test_length])
-    batch_size = len(data) // 20
+    batch_size = 20
     num_batches = train_length // batch_size
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) # create dataloader object
 
@@ -126,21 +134,11 @@ def load_and_process_data():
     print(sum([0 if x != 1 else 1 for x in data_labels]), "d's, label:1")
     print(sum([0 if x != 2 else 1 for x in data_labels]), "g's, label:2")
     print(sum([0 if x != 3 else 1 for x in data_labels]), "null vals, label:3")
+    print('========== hyperparameters ============')
     print("number of training examples:", train_length)
     print("batch size:", batch_size, ", number of batches:", num_batches)
-
-    '''
-    testset is loaded separately
-    '''
-    data_test = []
-    data_labels_test = []
-    files_test = []
-    if args.shift != 0:
-        load_dataset_shifted("dataset9/", data_test, data_labels_test, files_test, 9, 0, args.shift)
-        load_dataset_shifted("dataset9/other_data/", data_test, data_labels_test, files_test, 9, 0, args.shift)
-    else:
-        load_dataset("dataset9/", data_test, data_labels_test, files_test, 9, 0)
-        load_dataset("dataset9/other_data/", data_test, data_labels_test, files_test, 9, 0)
+    print("learning rate:", learning_rate, ", momentum:", momentum)
+    print('epochs:', num_epochs)
 
     # process labels and data loader
     test_loader = DataLoader(test_dataset, batch_size=test_length, shuffle=True)
@@ -152,8 +150,9 @@ def train(train_loader, len_train_data):
     '''
     global tdnn
     tdnn = TDNNv2()
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(tdnn.parameters(), lr=10e-2, momentum=0.3) #weight_decay=0.01
+    # criterion = nn.CrossEntropyLoss()
+    criterion = nn.MSELoss()
+    optimizer = optim.SGD(tdnn.parameters(), lr=learning_rate, momentum=momentum) #weight_decay=0.01
 
     # hyperparameters
     losses = []
@@ -163,6 +162,8 @@ def train(train_loader, len_train_data):
         running_loss = 0.0
         for i, samples in enumerate(train_loader, 0): 
             inputs, labels, _ = samples
+            labels = torch.nn.functional.one_hot(labels, num_classes=3).float()
+            # print(labels)
 
             # zero the parameter gradients
             optimizer.zero_grad()

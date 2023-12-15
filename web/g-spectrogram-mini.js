@@ -20,6 +20,9 @@ Polymer('g-spectrogram-mini', {
   start_time_ms: -1,
   explaining: false,
   dataTensorNormed: tf.zeros([16, 15]),
+  amplitude_over_thresh: false,
+  amplitude_thresh: -1400,
+  prev_max: 0,
 
   // current data, 15 frames of 16 frequency bins
   currDat: tf.zeros([16, 15], dtype='float32'),
@@ -243,14 +246,14 @@ Polymer('g-spectrogram-mini', {
     var min_y = Math.min.apply(null, y);
     var y_scaled = [0, 0, 0];
     for (i=0; i<3; i++){
-      y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
+      y_scaled[i] = y[i] / 4;//(y[i] - min_y) / (max_y - min_y);
     }
-    // console.log(y);
+    console.log(y);
     
     // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
-    document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
-    document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
+    document.getElementById('pred1').style = "height: "+y_scaled[0] * 20 +"vh";
+    document.getElementById('pred2').style = "height: "+y_scaled[1] * 20 +"vh";
+    document.getElementById('pred3').style = "height: "+y_scaled[2] * 20 +"vh";
     // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
 
     localStorage.setItem("currDat", the_dat.arraySync());
@@ -271,6 +274,12 @@ Polymer('g-spectrogram-mini', {
     )
     .catch(err =>
       console.log(err));
+
+    setTimeout(() => {
+      document.getElementById('pred1').style = "height: "+1 +"vh";
+      document.getElementById('pred2').style = "height: "+1 +"vh";
+      document.getElementById('pred3').style = "height: "+1 +"vh";
+    }, 1000);
   },
 
   createAudioGraph: async function() {
@@ -283,19 +292,28 @@ Polymer('g-spectrogram-mini', {
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.ctx = this.$.canvas.getContext('2d');
       this.onStream(stream);
-       // predict every 200 ms
+
+
+      // predict when amplitude is greater than threshold
+
       var date2 = Date.now();
       setInterval(() => {
-        var data_pre = this.currDat2.arraySync();
-        this.predictModel(data_pre);
-        tf.print(this.currDat2);
-        // var date = Date.now();
-        // console.log(date - date2);
-        // date2 = date;
-        // console.log(this.currDat2.shape);
-        var longest_frames = 200;
-        if(this.currDat2.shape[1] > longest_frames){
-          this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
+        console.log(this.amplitude_over_thresh);
+        if(this.amplitude_over_thresh){
+          var data_pre = this.currDat2.arraySync();
+          this.predictModel(data_pre);
+          this.color = true;
+          // tf.print(this.currDat2);
+          // var date = Date.now();
+          // console.log(date - date2);
+          // date2 = date;
+          // console.log(this.currDat2.shape);
+          var longest_frames = 100;
+          if(this.currDat2.shape[1] > longest_frames){
+            this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
+          }
+        } else {
+          this.color = false;
         }
       }, 200);
     } catch (e) {
@@ -418,6 +436,26 @@ Polymer('g-spectrogram-mini', {
       this.currDat = currDat;
 
       var currDat2 = tf.concat([this.currDat2, currCol], 1);
+      // find max
+      currCol = currCol.arraySync();
+      let amp = 0;
+      for (let i = 2; i < currCol.length; i++) {
+        if(parseFloat(-currCol[i]) == Infinity){
+          amp = 0;
+          break;
+        }
+        amp += parseFloat(currCol[i]);
+      }
+      // if (amp > -1000){
+      //   console.log(amp);
+      //   this.prev_max = amp;
+      // }
+      if (amp > this.amplitude_thresh) {
+        this.amplitude_over_thresh = true;
+      } else {
+        this.amplitude_over_thresh = false;
+      }
+      
       this.currDat2 = currDat2;
     }, 10);
     

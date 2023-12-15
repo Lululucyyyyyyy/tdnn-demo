@@ -1,0 +1,70 @@
+loading dataset9/
+loaded 60 samples (not including null files)
+loaded 60 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+loading dataset9/
+loaded 54 samples (not including null files)
+loaded 54 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+loading dataset9/
+loaded 60 samples (not including null files)
+loaded 60 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+dataset done loading; loaded total of  2061 samples
+686 b's, label:0
+689 d's, label:1
+686 g's, label:2
+0 null vals, label:3
+number of training examples: 1855
+batch size: 82 , number of batches: 22
+0 loss: 0.0028212006442309067
+25 loss: 0.002749142275666291
+50 loss: 0.002697561845946505
+75 loss: 0.002560681514341555
+100 loss: 0.002370917548066522
+125 loss: 0.002144226030198069
+150 loss: 0.0019865162048057082
+175 loss: 0.0017791900352005046
+200 loss: 0.0015919804412399662
+225 loss: 0.0014319870068699202
+250 loss: 0.0013177350083130068
+275 loss: 0.0012132994931020504
+300 loss: 0.001103598839349824
+325 loss: 0.0010079892758892554
+350 loss: 0.0009224187191123911
+375 loss: 0.0008437219936892671
+400 loss: 0.0007675459623497452
+425 loss: 0.0007063009587902264
+450 loss: 0.0006697615262151085
+475 loss: 0.0006269237403117743
+500 loss: 0.0005931345279004696
+525 loss: 0.0005588673446779303
+550 loss: 0.0005413700979594593
+575 loss: 0.0005083721974548304
+600 loss: 0.0004908928160638501
+625 loss: 0.00046645497697382925
+650 loss: 0.00045725130990669735
+675 loss: 0.0004315707792409989
+Finished Training 700 epochs
+Testing on 1855 inputs (training data)
+Accuracy of the network on the train samples: 95 %
+Testing on 206 inputs
+              precision    recall  f1-score   support
+
+           0       0.91      0.94      0.92        64
+           1       0.92      0.88      0.90        80
+           2       0.88      0.90      0.89        62
+
+    accuracy                           0.90       206
+   macro avg       0.90      0.91      0.90       206
+weighted avg       0.90      0.90      0.90       206
+
+Accuracy of the network on the test samples: 90 %
+incorrect examples loaded into incorrect_examples/samples_022
+model parameters loaded into model_params/model_params_022

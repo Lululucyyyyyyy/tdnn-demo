@@ -17,3 +17,5 @@ Data Collection
 - model 17: same as model 16, except without extra sigmoid layer, 500 epochs
 - model 18: separate train and test data, otherwise same as 16
 - model 19: separate train and test data, otherwise same as 17
+- model 20: sigmoid, batch size 82, 700 epochs, with shifted data by 1 frame forward and backward
+- model 23: sigmoid, batch size 20, 600 epochs, with shifted data by 1 frame, 94% test
