@@ -2,16 +2,12 @@ from tdnn import TDNN as TDNNLayer
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-from torch.autograd import Variable
 from torch.utils.data import TensorDataset, DataLoader
-import math, random
-import numpy as np
-import os, re
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from mytools import load_dataset
 from sklearn.metrics import classification_report
+from sklearn.model_selection import KFold
 from mytools import *
 import argparse
 
@@ -64,12 +60,16 @@ def parse_arguments():
                         default=False, help="save parameters>")
     parser.add_argument('--path_num', dest='path_num', type=int,
                         default=0, help="which model param path to save to")
+    parser.add_argument('--show_plt', dest='show_plot', type=bool,
+                        default=False, help="show training plots")
     return parser.parse_args()
 
 args = parse_arguments()
 num_epochs = 600
 learning_rate = 0.3
 momentum = 0.3
+k_folds = 3
+batch_size = 20
 
 def load_and_process_data():
     '''
@@ -124,10 +124,10 @@ def load_and_process_data():
     files_tensor = torch.tensor(files_int_labels)
     whole_dataset = TensorDataset(normed_data, labels_tensor, files_tensor)
 
+    # split into K folds
+    kfold = KFold(n_splits=k_folds, shuffle=True)
+
     train_dataset, test_dataset = torch.utils.data.random_split(whole_dataset, [train_length, test_length])
-    batch_size = 20
-    num_batches = train_length // batch_size
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) # create dataloader object
 
     print("dataset done loading; loaded total of ", len(data), "samples")
     print(sum([0 if x != 0 else 1 for x in data_labels]), "b's, label:0")
@@ -136,56 +136,108 @@ def load_and_process_data():
     print(sum([0 if x != 3 else 1 for x in data_labels]), "null vals, label:3")
     print('========== hyperparameters ============')
     print("number of training examples:", train_length)
-    print("batch size:", batch_size, ", number of batches:", num_batches)
+    print("batch size:", batch_size)
     print("learning rate:", learning_rate, ", momentum:", momentum)
     print('epochs:', num_epochs)
 
-    # process labels and data loader
-    test_loader = DataLoader(test_dataset, batch_size=test_length, shuffle=True)
-    return train_loader, test_loader, train_length, test_length, mean, std, files_dict
+    return train_length, test_length, mean, std, files_dict, kfold, train_dataset, test_dataset
 
-def train(train_loader, len_train_data):
+def reset_weights(m):
+    for layer in m.children():
+        if hasattr(layer, 'reset_parameters'):
+            print(f'Reset trainable parameters of layer = {layer}')
+            layer.reset_parameters()
+
+def train(train_dataset, kfold):
     '''
     Training
     '''
-    global tdnn
-    tdnn = TDNNv2()
-    # criterion = nn.CrossEntropyLoss()
-    criterion = nn.MSELoss()
-    optimizer = optim.SGD(tdnn.parameters(), lr=learning_rate, momentum=momentum) #weight_decay=0.01
+    results = {}
+    for fold, (train_ids, valid_ids) in enumerate(kfold.split(train_dataset)):
+        print(f'Fold {fold}')
+        print('------------------------------------------')
+        train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+        valid_subsampler = torch.utils.data.SubsetRandomSampler(valid_ids)
+        trainloader = torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size=batch_size, sampler=train_subsampler)
+        validloader = torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size=batch_size, sampler=valid_subsampler
+        )
 
-    # hyperparameters
-    losses = []
+        # global tdnn
+        tdnn = TDNNv2()
+        tdnn.apply(reset_weights)
+        criterion = nn.MSELoss()
+        optimizer = optim.SGD(tdnn.parameters(), lr=learning_rate, momentum=momentum) #weight_decay=0.01
+        losses = []
 
-    for epoch in range(num_epochs): 
+        # train current batch
+        for epoch in range(num_epochs): 
 
-        running_loss = 0.0
-        for i, samples in enumerate(train_loader, 0): 
-            inputs, labels, _ = samples
-            labels = torch.nn.functional.one_hot(labels, num_classes=3).float()
-            # print(labels)
-
-            # zero the parameter gradients
-            optimizer.zero_grad()
-            outputs = tdnn(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-        if epoch % 25 == 0:  
-            print(f'{epoch} loss: {running_loss/len_train_data}')
-            losses.append(running_loss/len_train_data)
             running_loss = 0.0
+            for i, samples in enumerate(trainloader, 0): 
+                inputs, labels, _ = samples
+                labels = torch.nn.functional.one_hot(labels, num_classes=3).float()
 
-    print('Finished Training', num_epochs, 'epochs')
+                # zero the parameter gradients
+                optimizer.zero_grad()
+                outputs = tdnn(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
 
-    plt.plot(losses)
-    plt.title("Training Loss on " + str(num_epochs) + " epochs")
-    plt.show()
-    return tdnn, optimizer, loss, num_epochs
+                running_loss += loss.item()
+            if epoch % 25 == 0:  
+                print(f'{epoch} loss: {running_loss/25}')
+                losses.append(running_loss/25)
+                running_loss = 0.0
 
-def test(tdnn_test, test_loader, train_length, test_length, save_incorrect, incorect_examples_path, files_dict = {}):
+        print('Finished Training Fold', fold, 'with', num_epochs, 'epochs')
+        if args.show_plot:
+            plt.plot(losses)
+            plt.title("Training Loss on " + str(num_epochs) + " epochs")
+            plt.show()
+
+        # evaluate current fold
+        path_num = "{:03d}".format(args.path_num)
+        save_path = f'model_params/folds/{path_num}_{fold}'
+        torch.save(tdnn.state_dict(), save_path)
+
+        correct, total = 0, 0
+        with torch.no_grad():
+            for i, data in enumerate(validloader, 0):
+                inputs, targets, _ = data
+                outputs = tdnn(inputs)
+                _, predicted = torch.max(outputs.data, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+            print('Accuracy for fold %d: %d %%' % (fold, 100.0 * correct / total))
+            print('----------------------------')
+            results[fold] = 100.0 * (correct / total)
+
+    # K fold results
+    print(f'K-fold Cross Validation Results for {k_folds} Folds')
+    print('--------------------------------')
+    sum = 0.0
+    best, best_val = 0, 0
+    for key, value in results.items():
+        print(f'Fold {key}: {value} %')
+        sum += value 
+        if value > best_val:
+            best = key
+            best_val = value
+    print(f'Average: {sum/len(results.items())} %')
+
+    path_num = "{:03d}".format(args.path_num)
+    best_path = f'model_params/folds/{path_num}_{best}'
+    model = TDNNv2()
+    model.load_state_dict(torch.load(best_path))
+
+    return model, optimizer, loss, num_epochs
+
+def test(tdnn_test, test_dataset, train_length, test_length, save_incorrect, incorect_examples_path, files_dict = {}):
     '''
     Testing
     '''
@@ -196,30 +248,32 @@ def test(tdnn_test, test_loader, train_length, test_length, save_incorrect, inco
     correct = 0
     total = 0
     f = open(incorect_examples_path, "a+")
-    with torch.no_grad():
-        for samples in train_loader:
-            inputs, labels, files = samples
-            outputs = tdnn_test(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-            if save_incorrect == True:
-                for i, x in enumerate(predicted):
-                    if x != labels[i]:
-                        file_int = files[i].item()
-                        file = files_dict[file_int]
-                        f.write(file + ' ' + 'predicted: ' + str(x.item()) + '\n')
+    # with torch.no_grad():
+    #     for samples in train_loader:
+    #         inputs, labels, files = samples
+    #         outputs = tdnn_test(inputs)
+    #         _, predicted = torch.max(outputs.data, 1)
+    #         total += labels.size(0)
+    #         correct += (predicted == labels).sum().item()
+    #         if save_incorrect == True:
+    #             for i, x in enumerate(predicted):
+    #                 if x != labels[i]:
+    #                     file_int = files[i].item()
+    #                     file = files_dict[file_int]
+    #                     f.write(file + ' ' + 'predicted: ' + str(x.item()) + '\n')
 
-    print(f'Accuracy of the network on the train samples: {100 * correct // total} %')
+    # print(f'Accuracy of the network on the train samples: {100 * correct // total} %')
 
     print("Testing on", test_length, "inputs")
 
     f.write('================ \n')
 
+    testloader = torch.utils.data.DataLoader(
+            test_dataset, batch_size = len(test_dataset))
     correct = 0
     total = 0
     with torch.no_grad():
-        for samples in test_loader:
+        for samples in testloader:
             inputs, labels, files = samples
             outputs = tdnn_test(inputs)
             _, predicted = torch.max(outputs.data, 1)
@@ -255,13 +309,13 @@ def save_params(tdnn, state_dict, optimizer, num_epochs, loss, mean, std, model_
     print('model parameters loaded into', model_params_path)
 
 
-train_loader, test_loader, len_train_data, len_test_data, mean, std, files_dict = load_and_process_data()
+len_train_data, len_test_data, mean, std, files_dict, k_folded_data, train_dataset, test_dataset = load_and_process_data()
 
-trained_tdnn, optimizer, num_epochs, loss = train(train_loader, 
-                                                len_train_data)
+trained_tdnn, optimizer, num_epochs, loss = train(train_dataset,
+                                                k_folded_data)
 
 test(trained_tdnn, 
-    test_loader, 
+    test_dataset, 
     len_train_data, 
     len_test_data, 
     save_incorrect = args.save, 

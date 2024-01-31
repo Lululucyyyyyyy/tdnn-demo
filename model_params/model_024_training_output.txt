@@ -1,0 +1,154 @@
+loading dataset9/
+loaded 60 samples (not including null files)
+loaded 60 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+loading dataset9/
+loaded 54 samples (not including null files)
+loaded 54 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+loading dataset9/
+loaded 60 samples (not including null files)
+loaded 60 samples (including null files)
+loading dataset9/other_data/
+loaded 629 samples (not including null files)
+loaded 629 samples (including null files)
+dataset done loading; loaded total of  2061 samples
+686 b's, label:0
+689 d's, label:1
+686 g's, label:2
+0 null vals, label:3
+========== hyperparameters ============
+number of training examples: 1855
+batch size: 20
+learning rate: 0.3 , momentum: 0.3
+epochs: 600
+Fold 0
+------------------------------------------
+Reset trainable parameters of layer = Conv1d(16, 8, kernel_size=(3,), stride=(1,))
+Reset trainable parameters of layer = Conv1d(8, 3, kernel_size=(3,), stride=(1,), dilation=(2,))
+Reset trainable parameters of layer = Conv1d(16, 8, kernel_size=(3,), stride=(1,))
+Reset trainable parameters of layer = Conv1d(8, 3, kernel_size=(3,), stride=(1,), dilation=(2,))
+Reset trainable parameters of layer = Linear(in_features=27, out_features=3, bias=True)
+Reset trainable parameters of layer = Linear(in_features=27, out_features=3, bias=True)
+0 loss: 0.5593457156419754
+25 loss: 0.43944557845592497
+50 loss: 0.312881538271904
+75 loss: 0.2080769109725952
+100 loss: 0.1507273332774639
+125 loss: 0.12001877069473267
+150 loss: 0.10154046159237623
+175 loss: 0.08604110494256019
+200 loss: 0.07602734182029963
+225 loss: 0.06661315070465207
+250 loss: 0.0629465171508491
+275 loss: 0.05689679492264986
+300 loss: 0.053348668590188025
+325 loss: 0.04913274608086795
+350 loss: 0.04449278160464019
+375 loss: 0.04270826999330893
+400 loss: 0.038304859027266505
+425 loss: 0.03703735319664702
+450 loss: 0.03252954222727567
+475 loss: 0.0301585601689294
+500 loss: 0.02899028453743085
+525 loss: 0.02760818393435329
+550 loss: 0.024312938498333096
+575 loss: 0.02325792163144797
+Finished Training Fold 0 with 600 epochs
+Accuracy for fold 0: 89 %
+----------------------------
+Fold 1
+------------------------------------------
+Reset trainable parameters of layer = Conv1d(16, 8, kernel_size=(3,), stride=(1,))
+Reset trainable parameters of layer = Conv1d(8, 3, kernel_size=(3,), stride=(1,), dilation=(2,))
+Reset trainable parameters of layer = Conv1d(16, 8, kernel_size=(3,), stride=(1,))
+Reset trainable parameters of layer = Conv1d(8, 3, kernel_size=(3,), stride=(1,), dilation=(2,))
+Reset trainable parameters of layer = Linear(in_features=27, out_features=3, bias=True)
+Reset trainable parameters of layer = Linear(in_features=27, out_features=3, bias=True)
+0 loss: 0.5581245732307434
+25 loss: 0.4612284660339355
+50 loss: 0.3517120948433876
+75 loss: 0.23961134105920792
+100 loss: 0.1854590154439211
+125 loss: 0.14702166248112916
+150 loss: 0.11686273273080587
+175 loss: 0.09688269810751081
+200 loss: 0.08334357745945453
+225 loss: 0.07271193347871303
+250 loss: 0.06412486404180527
+275 loss: 0.05922309745568782
+300 loss: 0.05376000007614493
+325 loss: 0.04956635501235723
+350 loss: 0.04496002955362201
+375 loss: 0.04233671410009265
+400 loss: 0.03951423875056207
+425 loss: 0.036359633821994065
+450 loss: 0.03516022794879973
+475 loss: 0.03148020285647363
+500 loss: 0.030587841109372675
+525 loss: 0.028443199591711165
+550 loss: 0.02570528516545892
+575 loss: 0.025093839587643742
+Finished Training Fold 1 with 600 epochs
+Accuracy for fold 1: 84 %
+----------------------------
+Fold 2
+------------------------------------------
+Reset trainable parameters of layer = Conv1d(16, 8, kernel_size=(3,), stride=(1,))
+Reset trainable parameters of layer = Conv1d(8, 3, kernel_size=(3,), stride=(1,), dilation=(2,))
+Reset trainable parameters of layer = Conv1d(16, 8, kernel_size=(3,), stride=(1,))
+Reset trainable parameters of layer = Conv1d(8, 3, kernel_size=(3,), stride=(1,), dilation=(2,))
+Reset trainable parameters of layer = Linear(in_features=27, out_features=3, bias=True)
+Reset trainable parameters of layer = Linear(in_features=27, out_features=3, bias=True)
+0 loss: 0.5574225491285324
+25 loss: 0.4208933186531067
+50 loss: 0.3218429031968117
+75 loss: 0.24758340582251548
+100 loss: 0.190337932407856
+125 loss: 0.1503672719746828
+150 loss: 0.12297418795526027
+175 loss: 0.10231871321797371
+200 loss: 0.08872365511953831
+225 loss: 0.07753564372658729
+250 loss: 0.06920843705534935
+275 loss: 0.0616474274545908
+300 loss: 0.0537626057676971
+325 loss: 0.049672713056206706
+350 loss: 0.04470722325146198
+375 loss: 0.03963815395254642
+400 loss: 0.0365977319329977
+425 loss: 0.03464684030972421
+450 loss: 0.029982616729103028
+475 loss: 0.027973383413627744
+500 loss: 0.02631503246258944
+525 loss: 0.025018704361282288
+550 loss: 0.023220694116316734
+575 loss: 0.02150918427389115
+Finished Training Fold 2 with 600 epochs
+Accuracy for fold 2: 87 %
+----------------------------
+K-fold Cross Validation Results for 3 Folds
+--------------------------------
+Fold 0: 89.49919224555735 %
+Fold 1: 84.46601941747572 %
+Fold 2: 87.86407766990291 %
+Average: 87.27642977764533 %
+Testing on 1855 inputs (training data)
+Testing on 206 inputs
+              precision    recall  f1-score   support
+
+           0       0.95      0.83      0.89        71
+           1       0.86      0.88      0.87        75
+           2       0.85      0.95      0.90        60
+
+    accuracy                           0.88       206
+   macro avg       0.89      0.89      0.88       206
+weighted avg       0.89      0.88      0.88       206
+
+Accuracy of the network on the test samples: 88 %
+incorrect examples loaded into incorrect_examples/samples_024
+model parameters loaded into model_params/model_params_024

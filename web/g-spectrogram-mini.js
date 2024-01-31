@@ -21,7 +21,7 @@ Polymer('g-spectrogram-mini', {
   explaining: false,
   dataTensorNormed: tf.zeros([16, 15]),
   amplitude_over_thresh: false,
-  amplitude_thresh: -1400,
+  amplitude_thresh: -1500,
   prev_max: 0,
 
   // current data, 15 frames of 16 frequency bins
@@ -238,6 +238,9 @@ Polymer('g-spectrogram-mini', {
         console.log('right before model',i, dataTensorNormed.dataSync().slice(i*16,(i+1)*16));
       }
     }
+
+    document.getElementById('debug-dump').innerHTML = dataTensorNormed;
+    console.log(dataTensorNormed.shape);
     
     // gets model prediction
     var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});

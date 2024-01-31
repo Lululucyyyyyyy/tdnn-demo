@@ -24,40 +24,14 @@
         <a href="weight.html"><div class="show-btn" id="weight">See Weights</div></a>
       </div>
       <div class="instructions">
-        <h3>Instructions</h3>
-        <p>The <span class="highlight1">switch</span> button toggles <span class="highlight2">start write file</span> and 
-          <span class="highlight3">record and sample</span>. <span class="highlight2">start write file</span>
-          allows you to record a sample of the spectrogram, and will be written into a text file and downloaded. 
-          <span class="highlight3">record and sample</span> will record you, then sample from the selcted recording
-          time frame, then process the data to output a prediction. The browser will save your latest sample recorded, and
-          you can proceed to the <span class="highlight4">explain</span> button to see how the TDNN model processed the spectrogram
-          to produce the result.</p>
-        <p id="debug-dump"></p>
       </div>
     </div>
     <div class="body-wrapper-index">
       <div class="spectrograms">
-        <div class="spectrogram-wrapper" id="main-spectrogram">
-          <g-spectrogram controls labels log oscillator ></g-spectrogram>
-        </div>
-        <div>
+
+        
         <div class="spectrogram-wrapper-mini" id="mini-spectrogram">
           <g-spectrogram-mini controls labels log oscillator speed="10"></g-spectrogram>
-        </div>
-      </div>
-      <div class="predictions">
-        Predictions 
-        <div class="pred-outer-wrapper">
-          <ul class="pred-wrapper">
-            <li>b<div id="pred1"></div></li>
-            <li>d<div id="pred2"></div></li>
-            <li>g<div id="pred3"></div></li>
-            <!-- <li>null<div id="pred4"></div></li> -->
-          </ul>
-          </div>
-          <div class="pred-class-wrapper">
-            prediction: <span id="predClass"></span>
-          </div>
         </div>
       </div>
     </div>
