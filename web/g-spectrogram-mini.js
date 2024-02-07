@@ -239,7 +239,7 @@ Polymer('g-spectrogram-mini', {
       }
     }
 
-    document.getElementById('debug-dump').innerHTML = dataTensorNormed;
+    // document.getElementById('debug-dump').innerHTML = dataTensorNormed;
     console.log(dataTensorNormed.shape);
     
     // gets model prediction
@@ -283,6 +283,31 @@ Polymer('g-spectrogram-mini', {
       document.getElementById('pred2').style = "height: "+1 +"vh";
       document.getElementById('pred3').style = "height: "+1 +"vh";
     }, 1000);
+  },
+
+  doneTimer: function() {
+    console.log("1s pause");
+    this.writing = false;
+    this.color = false;
+    console.log('after timeout')
+    console.log(this.writing, this.color);
+    console.log(this.currDat);
+    var link = document.createElement('a');
+    var data_pre = this.currDat.arraySync();
+    console.log('currDat arraysync', currDat.arraySync());
+    var str = "";
+    for (row in data_pre) {
+      str += data_pre[row].toString();
+      str += '\n';
+    }
+    var data = new Blob([str], {type: 'text/plain'});
+    console.log(data);
+    textFile = window.URL.createObjectURL(data);
+    console.log('File written successfully to', textFile);
+    link.href = textFile;
+    link.download = "data.txt";
+    link.click();
+    document.getElementById('file-write-btn').innerHTML = "Start File Write";
   },
 
   createAudioGraph: async function() {
@@ -398,6 +423,16 @@ Polymer('g-spectrogram-mini', {
           document.getElementById('file-write-btn').innerHTML = "Start File Write";
         }, 1000);
 
+      }
+
+      if(this.writing){
+        // data
+        var currCol = this.extractFrequencies();
+        currCol = tf.transpose(tf.tensor([currCol]));
+        var currDat = tf.concat([this.currDat, currCol], 1);
+        this.currDat = currDat;
+        // console.log('376', this.currDat);
+        // this.predictModel();
       }
     } else {
       // predicting
