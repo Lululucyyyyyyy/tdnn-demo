@@ -20,9 +20,13 @@ Polymer('g-spectrogram-mini', {
   start_time_ms: -1,
   explaining: false,
   dataTensorNormed: tf.zeros([16, 15]),
+  data_whole: tf.zeros([16, 1], dtype='float32'),
+  frames_since_last_coloured: 0,
+  custom_start_time_ms: -1,
   amplitude_over_thresh: false,
   amplitude_thresh: -1500,
   prev_max: 0,
+  stopped: false, 
 
   // current data, 15 frames of 16 frequency bins
   currDat: tf.zeros([16, 15], dtype='float32'),
@@ -37,6 +41,7 @@ Polymer('g-spectrogram-mini', {
   
   attachedCallback: async function() {
     this.tempCanvas = document.createElement('canvas'),
+    this.tempCanvas2 = document.createElement('canvas'),
     console.log('Created spectrogram');
     // console.log('cur dat', this.currDat);
 
@@ -240,7 +245,7 @@ Polymer('g-spectrogram-mini', {
     }
 
     // document.getElementById('debug-dump').innerHTML = dataTensorNormed;
-    console.log(dataTensorNormed.shape);
+    // console.log(dataTensorNormed.shape);
     
     // gets model prediction
     var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
@@ -251,7 +256,7 @@ Polymer('g-spectrogram-mini', {
     for (i=0; i<3; i++){
       y_scaled[i] = y[i] / 4;//(y[i] - min_y) / (max_y - min_y);
     }
-    console.log(y);
+    // console.log(y);
     
     // replaces the text in the result tag by the model prediction
     document.getElementById('pred1').style = "height: "+y_scaled[0] * 20 +"vh";
@@ -278,11 +283,76 @@ Polymer('g-spectrogram-mini', {
     .catch(err =>
       console.log(err));
 
-    setTimeout(() => {
-      document.getElementById('pred1').style = "height: "+1 +"vh";
-      document.getElementById('pred2').style = "height: "+1 +"vh";
-      document.getElementById('pred3').style = "height: "+1 +"vh";
-    }, 1000);
+    // setTimeout(() => {
+    //   document.getElementById('pred1').style = "height: "+1 +"vh";
+    //   document.getElementById('pred2').style = "height: "+1 +"vh";
+    //   document.getElementById('pred3').style = "height: "+1 +"vh";
+    // }, 1000);
+  },
+
+  predictModel_noSegment: async function(){
+    // converts from a canvas data object to a tensor
+    var start_frame = this.custom_start_time_ms / 10;
+    var the_dat = this.currDat.slice([0, start_frame], [16, 15]);
+    var dataTensor = tf.stack([the_dat]);
+    var print = false;
+
+    if (print == true){
+      for(var i = 0; i < 15; i ++){
+        console.log('currDat',i, this.currDat.dataSync().slice(i*16,(i+1)*16));
+      }
+    }
+
+    if (print == true){
+      for(var i = 0; i < 15; i ++){
+        console.log('before transformations',i, dataTensor.dataSync().slice(i*16,(i+1)*16));
+      }
+    }
+
+    // mean and std transformation
+    var subbed = tf.sub(dataTensor, mean);
+    var dataTensorNormed = tf.div(subbed, std);
+    self.dataTensorNormed = dataTensorNormed;
+    var dataTensorNormedTransposed = tf.transpose(dataTensorNormed, [0, 2, 1]);
+
+    // gets model prediction
+    var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
+    y = y.dataSync()
+    var y_scaled = [0, 0, 0];
+    for (i=0; i<3; i++){
+      y_scaled[i] = y[i] / 3;//(y[i] - min_y) / (max_y - min_y);
+    }
+    console.log(y);
+    
+    // replaces the text in the result tag by the model prediction
+    document.getElementById('pred1').style = "height: "+y_scaled[0] * 20 +"vh";
+    document.getElementById('pred2').style = "height: "+y_scaled[1] * 20 +"vh";
+    document.getElementById('pred3').style = "height: "+y_scaled[2] * 20 +"vh";
+
+    localStorage.setItem("currDat", the_dat.arraySync());
+    localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
+    localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
+    // console.log('stored');
+
+    const classes = ["b", "d", "g", "null"];
+    var predictedClass = tf.argMax(y).array()
+    .then(predictedClass => {
+      document.getElementById("predClass").innerHTML = classes[predictedClass];
+      // if(predictedClass != 3){
+      //   console.log('predicted class', predictedClass);
+      //   console.log(y.dataSync());
+      //   // dataTensorNormed.array().then(array => console.log(array));
+      // }
+      }
+    )
+    .catch(err =>
+      console.log(err));
+
+    // setTimeout(() => {
+    //   document.getElementById('pred1').style = "height: "+1 +"vh";
+    //   document.getElementById('pred2').style = "height: "+1 +"vh";
+    //   document.getElementById('pred3').style = "height: "+1 +"vh";
+    // }, 1000);
   },
 
   doneTimer: function() {
@@ -324,26 +394,26 @@ Polymer('g-spectrogram-mini', {
 
       // predict when amplitude is greater than threshold
 
-      var date2 = Date.now();
-      setInterval(() => {
-        console.log(this.amplitude_over_thresh);
-        if(this.amplitude_over_thresh){
-          var data_pre = this.currDat2.arraySync();
-          this.predictModel(data_pre);
-          this.color = true;
-          // tf.print(this.currDat2);
-          // var date = Date.now();
-          // console.log(date - date2);
-          // date2 = date;
-          // console.log(this.currDat2.shape);
-          var longest_frames = 100;
-          if(this.currDat2.shape[1] > longest_frames){
-            this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
-          }
-        } else {
-          this.color = false;
-        }
-      }, 200);
+      // var date2 = Date.now();
+      // setInterval(() => {
+      //   console.log(this.amplitude_over_thresh);
+        // if(this.amplitude_over_thresh){
+        //   var data_pre = this.currDat2.arraySync();
+        //   this.predictModel(data_pre);
+        //   this.color = true;
+        //   // tf.print(this.currDat2);
+        //   // var date = Date.now();
+        //   // console.log(date - date2);
+        //   // date2 = date;
+        //   // console.log(this.currDat2.shape);
+        //   var longest_frames = 100;
+        //   if(this.currDat2.shape[1] > longest_frames){
+        //     this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
+        //   }
+        // } else {
+        //   this.color = false;
+        // }
+      // }, 200);
     } catch (e) {
       this.onStreamError(e);
     }
@@ -370,19 +440,19 @@ Polymer('g-spectrogram-mini', {
     }
 
     // stop button
-    document.getElementById('mini-spectrogram').onclick = () => {
-      if (this.audioContext.state == "running"){
-        console.log('mini clicked, stopping now');
-        this.audioContext.suspend().then( () => {
-          this.going = false;
-        });
-      } else if (this.audioContext.state == "suspended"){
-        console.log('mini clicked, starting again');
-        this.audioContext.resume().then(() => {
-          this.going = true;
-        });
-      }
-    }
+    // document.getElementById('mini-spectrogram').onclick = () => {
+    //   if (this.audioContext.state == "running"){
+    //     console.log('mini clicked, stopping now');
+    //     this.audioContext.suspend().then( () => {
+    //       this.going = false;
+    //     });
+    //   } else if (this.audioContext.state == "suspended"){
+    //     console.log('mini clicked, starting again');
+    //     this.audioContext.resume().then(() => {
+    //       this.going = true;
+    //     });
+    //   }
+    // }
 
     document.getElementById('switch-act-btn').onclick = () => {
       if (this.file_download){
@@ -395,6 +465,34 @@ Polymer('g-spectrogram-mini', {
         document.getElementById('predict-btn').style = "display: none;";
       }
     }
+
+    document.getElementById('start-stop-btn').onclick = () => {
+      if (this.stopped){
+        this.stopped = false;
+        document.getElementById('start-stop-btn').innerHTML = "Stop Spectrogram";
+      } else {
+        this.stopped = true;
+        document.getElementById('start-stop-btn').innerHTML = "Start Spectrogram";
+        this.predictModel(this.data_whole.arraySync());
+        this.custom_start_time_ms = this.start_time_ms;
+      }
+    }
+
+    document.getElementById('spec-left').onclick = () => {
+      console.log('left clicked');
+      this.custom_start_time_ms -= 10;
+    }
+
+    document.getElementById('spec-right').onclick = () => {
+      console.log('right clicked');
+      this.custom_start_time_ms += 10;
+    }
+
+    document.getElementById('spec-pred').onclick = () => {
+      console.log('predicting!!');
+      this.predictModel_noSegment();
+    }
+    // console.log(this.stopped);
 
     if(this.file_download){
       document.getElementById('file-write-btn').onclick = () => {
@@ -414,7 +512,7 @@ Polymer('g-spectrogram-mini', {
             str += '\n';
           }
           var data = new Blob([str], {type: 'text/plain'});
-          console.log(data);
+          // console.log(data);
           textFile = window.URL.createObjectURL(data);
           console.log('File written successfully to', textFile);
           link.href = textFile;
@@ -440,12 +538,21 @@ Polymer('g-spectrogram-mini', {
       currCol = tf.transpose(tf.tensor([currCol]));
       var currDat = tf.concat([this.currDat, currCol], 1);
       this.currDat = currDat;
+      if (this.writing == false && this.stopped == false){
+        this.frames_since_last_coloured ++;
+      } else if (this.writing == true && this.stopped == false){
+        var data_whole = tf.concat([this.data_whole, currCol], 1);
+        this.data_whole = data_whole;
+      }
+      // console.log(this.frames_since_last_coloured, this.data_whole.shape[1]);
       document.getElementById('predict-btn').onclick = () => {
         if (this.writing == false){
           this.currDat = tf.zeros([16, 1], dtype='float32');
           this.writing = true;
           this.color = true;
+          this.frames_since_last_coloured = 0;
           document.getElementById('predict-btn').innerHTML = "Stop and Predict";
+          this.data_whole = tf.zeros([16, 1], dtype='float32');
         } else {
           this.writing = false;
           this.color = false;
@@ -529,42 +636,74 @@ Polymer('g-spectrogram-mini', {
 
     var ctx = this.ctx;
     // Copy the current canvas onto the temp canvas.
-    this.tempCanvas.width = this.width;
-    this.tempCanvas.height = this.height;
-    var tempCtx = this.tempCanvas.getContext('2d');
-    tempCtx.drawImage(this.$.canvas, 0, 0, this.width, this.height);
 
-    // Iterate over the frequencies.
-    var freq16 = this.extractFrequenciesByte();
-    for (var i = 0; i < 16; i++) {
-      var value;
-      // Draw each pixel with the specific color.
-      if (this.log) {
-        logIndex = this.logScale(i, 16);
-        value = freq16[logIndex];
-      } else {
-        value = freq16[i];
+    // not stopped case: keep plotting
+    if (this.stopped == false){
+      this.tempCanvas.width = this.width;
+      this.tempCanvas.height = this.height;
+      var tempCtx = this.tempCanvas.getContext('2d');
+      var tempCtx2 = this.tempCanvas2.getContext('2d');
+      tempCtx.drawImage(this.$.canvas, 0, 0, this.width, this.height);
+      tempCtx2.drawImage(this.$.canvas, 0, 0, this.width, this.height);
+
+      // Iterate over the frequencies.
+      var freq16 = this.extractFrequenciesByte();
+      for (var i = 0; i < 16; i++) {
+        var value;
+        // Draw each pixel with the specific color.
+        if (this.log) {
+          logIndex = this.logScale(i, 16);
+          value = freq16[logIndex];
+        } else {
+          value = freq16[i];
+        }
+
+        // console.log("16 process value: ", value);
+        ctx.fillStyle = (this.color ? this.getFullColor(value) : this.getGrayColor(value));
+
+        var percent = i / 16;
+        var y = Math.round(percent * this.height);
+
+        // draw the line at the right side of the canvas
+        ctx.fillRect(this.width - this.speed, this.height - y,
+                    this.speed, this.height / 16);
       }
 
-      // console.log("16 process value: ", value);
-      ctx.fillStyle = (this.color ? this.getFullColor(value) : this.getGrayColor(value));
+      // Translate the canvas.
+      ctx.translate(-this.speed, 0);
+      // Draw the copied image.
+      ctx.drawImage(this.tempCanvas, 0, 0, this.width, this.height,
+                    0, 0, this.width, this.height);
 
-      var percent = i / 16;
-      var y = Math.round(percent * this.height);
+      // Reset the transformation matrix.
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    } else {
+      this.tempCanvas2.width = this.width;
+      this.tempCanvas2.height = this.height;
+      var tempCtx2 = this.tempCanvas2.getContext('2d');
+      tempCtx2.drawImage(this.tempCanvas, 0, 0, this.width, this.height);
 
-      // draw the line at the right side of the canvas
-      ctx.fillRect(this.width - this.speed, this.height - y,
-                   this.speed, this.height / 16);
+      // draw start time line
+      tempCtx2.fillStyle = 'rgb(0, 0, 255)';
+      // console.log(this.width, this.start_time_ms/10, this.speed, this.height);
+      var horiz = this.data_whole.shape[1];
+      var horiz_shift = (horiz + this.frames_since_last_coloured) * this.speed 
+      tempCtx2.fillRect(this.width - horiz_shift, 0, 5, this.height);
+      var horiz_shift_start = horiz_shift - this.custom_start_time_ms / 10 * this.speed;
+      tempCtx2.fillStyle = 'rgb(0, 255, 255)';
+      tempCtx2.fillRect(this.width - horiz_shift_start, 0, 5, this.height);
+      
+      // console.log(this.start_time_ms, horiz_shift_start);
+
+      // Translate the canvas.
+      // ctx.translate(-this.speed, 0);
+      // Draw the copied image.
+      ctx.drawImage(this.tempCanvas2, 0, 0, this.width, this.height,
+                    0, 0, this.width, this.height);
+
+      // Reset the transformation matrix.
+      // ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
-
-    // Translate the canvas.
-    ctx.translate(-this.speed, 0);
-    // Draw the copied image.
-    ctx.drawImage(this.tempCanvas, 0, 0, this.width, this.height,
-                  0, 0, this.width, this.height);
-
-    // Reset the transformation matrix.
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
   },
 
   /**
