@@ -250,18 +250,17 @@ Polymer('g-spectrogram-mini', {
     // gets model prediction
     var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
     y = y.dataSync()
-    var max_y = Math.max.apply(null, y);;
+    var max_y = Math.max.apply(null, y);
     var min_y = Math.min.apply(null, y);
     var y_scaled = [0, 0, 0];
     for (i=0; i<3; i++){
-      y_scaled[i] = y[i] / 4;//(y[i] - min_y) / (max_y - min_y);
+      y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
     }
-    // console.log(y);
     
     // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y_scaled[0] * 20 +"vh";
-    document.getElementById('pred2').style = "height: "+y_scaled[1] * 20 +"vh";
-    document.getElementById('pred3').style = "height: "+y_scaled[2] * 20 +"vh";
+    document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
+    document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
+    document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
     // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
 
     localStorage.setItem("currDat", the_dat.arraySync());
@@ -273,11 +272,6 @@ Polymer('g-spectrogram-mini', {
     var predictedClass = tf.argMax(y).array()
     .then(predictedClass => {
       document.getElementById("predClass").innerHTML = classes[predictedClass];
-      // if(predictedClass != 3){
-      //   console.log('predicted class', predictedClass);
-      //   console.log(y.dataSync());
-      //   // dataTensorNormed.array().then(array => console.log(array));
-      // }
       }
     )
     .catch(err =>
@@ -293,6 +287,8 @@ Polymer('g-spectrogram-mini', {
   predictModel_noSegment: async function(){
     // converts from a canvas data object to a tensor
     var start_frame = this.custom_start_time_ms / 10;
+
+    // start_frame = 34;
     var the_dat = this.currDat.slice([0, start_frame], [16, 15]);
     var dataTensor = tf.stack([the_dat]);
     var print = false;
@@ -319,15 +315,17 @@ Polymer('g-spectrogram-mini', {
     var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
     y = y.dataSync()
     var y_scaled = [0, 0, 0];
+    var max_y = Math.max.apply(null, y);
+    var min_y = Math.min.apply(null, y);
     for (i=0; i<3; i++){
-      y_scaled[i] = y[i] / 3;//(y[i] - min_y) / (max_y - min_y);
+      y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
     }
-    console.log(y);
+    console.log(y_scaled);
     
     // replaces the text in the result tag by the model prediction
-    document.getElementById('pred1').style = "height: "+y_scaled[0] * 20 +"vh";
-    document.getElementById('pred2').style = "height: "+y_scaled[1] * 20 +"vh";
-    document.getElementById('pred3').style = "height: "+y_scaled[2] * 20 +"vh";
+    document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
+    document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
+    document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
 
     localStorage.setItem("currDat", the_dat.arraySync());
     localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
@@ -338,21 +336,10 @@ Polymer('g-spectrogram-mini', {
     var predictedClass = tf.argMax(y).array()
     .then(predictedClass => {
       document.getElementById("predClass").innerHTML = classes[predictedClass];
-      // if(predictedClass != 3){
-      //   console.log('predicted class', predictedClass);
-      //   console.log(y.dataSync());
-      //   // dataTensorNormed.array().then(array => console.log(array));
-      // }
       }
     )
     .catch(err =>
       console.log(err));
-
-    // setTimeout(() => {
-    //   document.getElementById('pred1').style = "height: "+1 +"vh";
-    //   document.getElementById('pred2').style = "height: "+1 +"vh";
-    //   document.getElementById('pred3').style = "height: "+1 +"vh";
-    // }, 1000);
   },
 
   doneTimer: function() {
@@ -469,10 +456,10 @@ Polymer('g-spectrogram-mini', {
     document.getElementById('start-stop-btn').onclick = () => {
       if (this.stopped){
         this.stopped = false;
-        document.getElementById('start-stop-btn').innerHTML = "Stop Spectrogram";
+        document.getElementById('start-stop-btn').innerHTML = "Pause";
       } else {
         this.stopped = true;
-        document.getElementById('start-stop-btn').innerHTML = "Start Spectrogram";
+        document.getElementById('start-stop-btn').innerHTML = "Resume";
         this.predictModel(this.data_whole.arraySync());
         this.custom_start_time_ms = this.start_time_ms;
       }
@@ -481,16 +468,38 @@ Polymer('g-spectrogram-mini', {
     document.getElementById('spec-left').onclick = () => {
       console.log('left clicked');
       this.custom_start_time_ms -= 10;
+      this.predictModel_noSegment();
     }
 
     document.getElementById('spec-right').onclick = () => {
       console.log('right clicked');
       this.custom_start_time_ms += 10;
+      this.predictModel_noSegment();
     }
 
     document.getElementById('spec-pred').onclick = () => {
       console.log('predicting!!');
       this.predictModel_noSegment();
+    }
+
+    document.getElementById('download').onclick = () => {
+      console.log('downloading selected segment');
+      this.currDat = tf.zeros([16, 1], dtype='float32');
+      var link = document.createElement('a');
+      var data_pre = this.data_whole.arraySync();
+      var str = "";
+      for (row in data_pre) {
+        str += data_pre[row].toString();
+        str += '\n';
+      }
+      var data = new Blob([str], {type: 'text/plain'});
+      // console.log(data);
+      textFile = window.URL.createObjectURL(data);
+      console.log('File written successfully to', textFile);
+      link.href = textFile;
+      file_name = this.custom_start_time_ms.toString() + "data.txt"
+      link.download = file_name;
+      link.click();
     }
     // console.log(this.stopped);
 
@@ -556,7 +565,8 @@ Polymer('g-spectrogram-mini', {
         } else {
           this.writing = false;
           this.color = false;
-          var data_pre = currDat.arraySync();
+          // var data_pre = currDat.arraySync();
+          var data_pre = data_whole.arraySync();
           this.predictModel(data_pre);
           document.getElementById('file-write-btn').innerHTML = "Record Sample";
         }
@@ -662,7 +672,7 @@ Polymer('g-spectrogram-mini', {
         ctx.fillStyle = (this.color ? this.getFullColor(value) : this.getGrayColor(value));
 
         var percent = i / 16;
-        var y = Math.round(percent * this.height);
+        var y = Math.round(percent * this.height + 80);
 
         // draw the line at the right side of the canvas
         ctx.fillRect(this.width - this.speed, this.height - y,
@@ -692,6 +702,9 @@ Polymer('g-spectrogram-mini', {
       var horiz_shift_start = horiz_shift - this.custom_start_time_ms / 10 * this.speed;
       tempCtx2.fillStyle = 'rgb(0, 255, 255)';
       tempCtx2.fillRect(this.width - horiz_shift_start, 0, 5, this.height);
+
+      var horiz_shift_start1 = horiz_shift - (this.custom_start_time_ms / 10 + 15) * this.speed;
+      tempCtx2.fillRect(this.width - horiz_shift_start1, 0, 5, this.height);
       
       // console.log(this.start_time_ms, horiz_shift_start);
 
