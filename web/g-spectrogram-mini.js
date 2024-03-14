@@ -15,7 +15,7 @@ Polymer('g-spectrogram-mini', {
   writing: false,
   recorded_data: [],
   file_naming_idx: 0,
-  file_download: true,
+  file_download: false,
   thresh: 0.3,
   start_time_ms: -1,
   explaining: false,
@@ -159,8 +159,18 @@ Polymer('g-spectrogram-mini', {
   },
 
   storeData: async function(){
-    localStorage.setItem("currDat", self.currDat);
-    localStorage.setItem("dataTensorNormed", self.dataTensorNormed);
+    var start_time_ms = -1;
+    if(this.custom_start_time_ms == -1){
+      start_time_ms = this.start_time_ms;
+    } else {
+      start_time_ms = this.custom_start_time_ms;
+    }
+    localStorage.setItem("currDat", this.currDat.arraySync());
+    localStorage.setItem("dataWhole", this.data_whole.arraySync());
+    console.log('dataWhole shape', this.data_whole.shape);
+    localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
+    localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
+    localStorage.setItem("starttime", start_time_ms);
     console.log('stored');
     // return (self.currDat, self.dataTensorNormed);
   },
@@ -261,11 +271,16 @@ Polymer('g-spectrogram-mini', {
     document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
     document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
     document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
-    // document.getElementById('pred4').style = "height: "+y_scaled[3] * 100 +"vh";
+    document.getElementById('pred1_text').innerHTML = y[0].toLocaleString(
+      undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
+      document.getElementById('pred2_text').innerHTML = y[1].toLocaleString(
+        undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
+        document.getElementById('pred3_text').innerHTML = y[2].toLocaleString(
+          undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
 
-    localStorage.setItem("currDat", the_dat.arraySync());
-    localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
-    localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
+    // localStorage.setItem("currDat", the_dat.arraySync());
+    // localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
+    // localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
     // console.log('stored');
 
     const classes = ["b", "d", "g", "null"];
@@ -305,6 +320,8 @@ Polymer('g-spectrogram-mini', {
       }
     }
 
+    tf.print(dataTensor);
+
     // mean and std transformation
     var subbed = tf.sub(dataTensor, mean);
     var dataTensorNormed = tf.div(subbed, std);
@@ -320,14 +337,21 @@ Polymer('g-spectrogram-mini', {
     for (i=0; i<3; i++){
       y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
     }
-    console.log(y_scaled);
+    // console.log(y_scaled);
     
     // replaces the text in the result tag by the model prediction
     document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
     document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
     document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
+    document.getElementById('pred1_text').innerHTML = y[0].toLocaleString(
+      undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
+      document.getElementById('pred2_text').innerHTML = y[1].toLocaleString(
+        undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
+        document.getElementById('pred3_text').innerHTML = y[2].toLocaleString(
+          undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
 
     localStorage.setItem("currDat", the_dat.arraySync());
+    console.log('currDat dimensions', the_dat.shape);
     localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
     localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
     // console.log('stored');
@@ -460,9 +484,18 @@ Polymer('g-spectrogram-mini', {
       } else {
         this.stopped = true;
         document.getElementById('start-stop-btn').innerHTML = "Resume";
+        // console.log(data_whole.shape);
+        // data_whole shape: 16 times length
         this.predictModel(this.data_whole.arraySync());
         this.custom_start_time_ms = this.start_time_ms;
       }
+    }
+
+    document.getElementById('store-in-browser').onclick = () => {
+      console.log('storing data');
+      this.storeData();
+      // console.log(localStorage.getItem("dataTensorNormed"));
+      console.log(localStorage.getItem("starttime"));
     }
 
     document.getElementById('spec-left').onclick = () => {
@@ -637,12 +670,15 @@ Polymer('g-spectrogram-mini', {
   },
 
   renderFreqDomain: function() {
-    this.analyser.getByteFrequencyData(this.freq);
+    // this.analyser.getByteFrequencyData(this.freq);
+    
 
     // Check if we're getting lots of zeros.
     if (this.freq[0] === 0) {
       //console.warn(`Looks like zeros...`);
     }
+
+    // console.log('bytefrequency data', this.freq)
 
     var ctx = this.ctx;
     // Copy the current canvas onto the temp canvas.

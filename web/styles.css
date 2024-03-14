@@ -91,14 +91,15 @@ a{
   padding: 5px 10px;
   border-radius: 10px;
   width: 150px;
-  color: var(--c2)
+  color: var(--c2);
+  display: none;
 }
 
 #predict-btn{
   border: 3px solid var(--c3);
   padding: 5px 10px;
   border-radius: 10px;
-  display: none;
+  display: block;
   width: 150px;
   color: var(--c3)
 }
@@ -136,6 +137,13 @@ a{
   padding: 5px 10px;
   border-radius: 10px;
   color: var(--c4);
+}
+
+#store-in-browser{
+  border: 3px solid var(--c2);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c2);
 }
 
 /* ================= wrappers ==================== */
@@ -264,7 +272,6 @@ span.highlight4{
   height: 1vh;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  
 }
 
 #pred4{
@@ -273,7 +280,10 @@ span.highlight4{
   height: 1vh;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  
+}
+
+.pred-label{
+  margin-bottom: 50px;
 }
 
 .pred-class-wrapper{

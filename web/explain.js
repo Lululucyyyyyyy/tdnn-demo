@@ -16,7 +16,7 @@ function getData(){
     var ret = [];
     currDat = currDat.split(",");
     // console.log(currDat.length);
-    var numRows = 15;
+    var numRows = 16;
     var numCols = Math.floor(currDat.length / 15);
     // console.log(numCols);
     for(i=0; i<numCols; i++){
