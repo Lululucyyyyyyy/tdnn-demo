@@ -107,6 +107,9 @@ def extract_start_time(file, compare=True):
 		snum = "{:05d}".format(snum)
 		txt = new_parts[-1].split('.')[1]
 		new_name = part1 + name + snum + "-" + str(start_time_ms[0]) + "." + txt
+		if new_name[0] == "/":
+			new_name = new_name[1:]
+		print(file, new_name)
 		os.rename(file, new_name)
 	return start_time_ms
 

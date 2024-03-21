@@ -65,9 +65,11 @@ def parse_arguments():
     parser.add_argument('--file', dest='file', type=str,
                         default="", help="File of Spectrogram")
     parser.add_argument('--model', dest='model', type=str,
-                     default="model_params/model_params_015", help="Model to use")
+                     default="model_params/model_params_023", help="Model to use")
     parser.add_argument('--verbose', dest="verbose", type=bool,
                         default=False, help="print useless stuffs")
+    parser.add_argument('--segment', dest='segment', type=int,
+                        default=1, help='do we need to segment the file?')
     return parser.parse_args()
 
 args = parse_arguments()
@@ -83,12 +85,18 @@ model.eval()
 
 # testing
 # spectrogram_file_path = 'dataset9/b/ba00000-300.txt'
-spectrogram_file_path = args.file
-fs = spectrogram_file_path.split("-") # split file name to get starting frame
-file_name = spectrogram_file_path.split('.')[0]
-time = int(file_name.split('-')[1]) / 10
 
-start = int(fs[1].split('.')[0])//10
+spectrogram_file_path = args.file
+if args.segment:
+    fs = spectrogram_file_path.split("-") # split file name to get starting frame
+    file_name = spectrogram_file_path.split('.')[0]
+    time = int(file_name.split('-')[1]) / 10
+
+    start = int(fs[1].split('.')[0])//10
+else:
+    file_name = "tested_entire_sound"
+    time = 0
+
 with open(spectrogram_file_path) as g:
     mel_spectrogram = [[float(num) for num in line.split(',')] for line in g]
 g.close()
@@ -100,6 +108,7 @@ for x in range(0, len(mel_spectrogram[0]) - 15 + 1):
 
 # data processing with same parameters as model
 data_tensor = torch.Tensor(data)
+print(data_tensor.shape)
 # logged_data = 10*torch.log10(data_tensor + 10**-25)
 normed_data = (data_tensor - mean)/std
 inputs = normed_data
@@ -125,7 +134,14 @@ for i, curr_input in enumerate(inputs):
     output_g.append(outputs[0][2].item())
     # output_null.append(outputs[0][3].item())
     if i == time:
+        if predicted.tolist()[0] == 0:
+            predicted = "b, class 0"
+        elif predicted.tolist()[0] == 1:
+            predicted = "d, class 1"
+        else:
+            predicted = "g, class 2"
         print('model predicted at true timeframe', predicted)
+        print(outputs.tolist())
         # print('melspectrogram:')
         # print(curr_input)
 
