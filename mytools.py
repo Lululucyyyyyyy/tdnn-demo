@@ -21,46 +21,9 @@ import torch
 import ast
 from os.path import isfile, join
 import torch.nn as nn
-from tdnn import TDNN as TDNNLayer
 
 # file renaming threshold
 thresh = 0.1
-
-class TDNNv2(nn.Module):
-    '''
-    TDNN Model from Paper, consisting of the following layers:
-    - tdnn 1: 16 in channels, 8 out channels, 15 samples, window of 3
-    - sigmoid after tdnn
-    - tdnn 2: 8 in channels, 3 out channels, 13 samples, window of 5
-    - sigmoid after tdnn
-    - flatten: 9 frequencies, 3 out channels, flattens to (27, ) array
-    - linear: 27 inputs, 4 outputs
-    - sigmoid after final layer
-    '''
-
-    def __init__(self):
-        super(TDNNv2, self).__init__()
-
-        self.tdnn1 = TDNNLayer(16, 8, [-1,0,1])
-        self.sigmoid1 = nn.Sigmoid()
-        self.tdnn2 = TDNNLayer(8, 3, [-2,0,2])
-        self.sigmoid2 = nn.Sigmoid()
-        self.flatten = nn.Flatten()
-        self.linear = nn.Linear(27, 3)
-        self.sigmoid3 = nn.Sigmoid()
-        self.network = nn.Sequential(
-            self.tdnn1,
-            self.sigmoid1,
-            self.tdnn2,
-            self.sigmoid2,
-            self.flatten,
-            self.linear,
-            self.sigmoid3,
-        )
-
-    def forward(self, x):
-        out = self.network(x)
-        return out
 
 def extract_start_time(file, compare=True):
 	'''
@@ -126,7 +89,7 @@ def align_dataset(file_path, comp=True):
 	for f in sorted(os.listdir(file_path + "g")):
 		extract_start_time(file_path+"g/" + f, compare=comp)
 
-def load_file(f, label, letter, path_to_training_data, data, data_labels, files):
+def load_file(f, label, letter, path_to_training_data, data, data_labels=None, files=None):
 	'''
 	helper function that loads a file to data, and its label to data_labels
 	inputs:
@@ -141,14 +104,27 @@ def load_file(f, label, letter, path_to_training_data, data, data_labels, files)
 		return
 	fs = f.split("-") # split file name to get starting frame
 	start = int(fs[1].split('.')[0])//10
-	with open(path_to_training_data+letter+"/"+f, 'r') as g:
-		mel_spectrogram = [[float(num) for num in line.split(',')][start:start + 15] for line in g]
-		data.append(mel_spectrogram)
-		files.append(f)
-		if (np.array(mel_spectrogram).shape != (16, 15)):
-			print(f, np.array(mel_spectrogram).shape)
-	g.close()
-	data_labels.append(label)
+	if path_to_training_data is None:
+		with open(f, 'r') as g:
+			mel_spectrogram = [[float(num) for num in line.split(',')][start:start + 15] for line in g]
+			data.append(mel_spectrogram)
+			if files is not None:
+				files.append(f)
+			if (np.array(mel_spectrogram).shape != (16, 15)):
+				print(f, np.array(mel_spectrogram).shape)
+		g.close()
+	else:
+		with open(path_to_training_data+letter+"/"+f, 'r') as g:
+			mel_spectrogram = [[float(num) for num in line.split(',')][start:start + 15] for line in g]
+			data.append(mel_spectrogram)
+			if files is not None:
+				files.append(f) 
+			if (np.array(mel_spectrogram).shape != (16, 15)):
+				print(f, np.array(mel_spectrogram).shape)
+		g.close()
+
+	if data_labels != None:
+		data_labels.append(label)
 
 def load_file_shifted(f, label, letter, path_to_training_data, data, data_labels, files, num_frames_shifted):
 	'''

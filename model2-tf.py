@@ -6,6 +6,11 @@ import argparse
 import tensorflow as tf
 import numpy as np
 
+'''
+To convert the model, run:
+tensorflowjs_converter --input_format=keras-saved-model model0.keras /web_model/tfjs_model
+'''
+
 def load_and_process_data():
     '''
     Training Data set: 
@@ -53,14 +58,14 @@ def load_and_process_data():
     print('========== hyperparameters ============')
     print("number of training examples:", train_length)
 
-    return normed_data, labels_tensor
+    return normed_data, labels_tensor, mean, std
     # return train_length, test_length, mean, std, files_dict, kfold, train_dataset, test_dataset
 
 # num_folds = 1
 
 # kfold = KFold(n_splits=num_folds, shuffle=True)
 
-inputs, targets = load_and_process_data()
+inputs, targets, mean, std = load_and_process_data()
 # K-fold Cross Validation model evaluation
 # fold_no = 1
 num_epochs = 600
@@ -134,6 +139,16 @@ history = model.fit(train_inputs, train_labels,
                 epochs=num_epochs)
 
 print(model.predict(test_inputs))
+
+model.save('model1.keras')
+# tf.contrib.saved_model.save_keras_model('model1.keras') #outdated
+model.save('model1.h5')
+
+# save weights
+model.save_weights('weights/my_weights')
+
+np.savetxt('model0_mean.txt', mean, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
+np.savetxt('model0_std.txt', std, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
 
 # Generate generalization metrics
 scores = model.evaluate(train_inputs, train_labels, verbose=0)

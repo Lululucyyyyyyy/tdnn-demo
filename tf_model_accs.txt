@@ -1,0 +1,6 @@
+model 0
+
+model 1: 
+Train performance: loss of 0.01913820393383503; accuracy of 97.09677696228027%
+Test performance: loss of 0.07405642420053482; accuracy of 86.95651888847351%
+
