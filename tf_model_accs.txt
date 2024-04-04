@@ -4,3 +4,18 @@ model 1:
 Train performance: loss of 0.01913820393383503; accuracy of 97.09677696228027%
 Test performance: loss of 0.07405642420053482; accuracy of 86.95651888847351%
 
+model 2: (normalize case to case)
+Train performance: loss of 0.07623497396707535; accuracy of 91.12903475761414%
+Test performance: loss of 0.110186368227005; accuracy of 81.15941882133484%
+the confusion matrix of training dataset
+tf.Tensor(
+[[198   6   3]
+ [  8 175  19]
+ [  8  11 192]], shape=(3, 3), dtype=int32)
+
+the confusion matrix of test set
+tf.Tensor(
+[[19  1  2]
+ [ 3 22  3]
+[ 1  3 15]], shape=(3, 3), dtype=int32)
+

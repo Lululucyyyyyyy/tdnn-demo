@@ -9,6 +9,7 @@ import numpy as np
 '''
 To convert the model, run:
 tensorflowjs_converter --input_format=keras-saved-model model0.keras /web_model/tfjs_model
+tensorflowjs_converter --input_format=keras --output_format tfjs_layers_model  model2.h5 web_model/tfjs_model
 '''
 
 def load_and_process_data():
@@ -31,16 +32,20 @@ def load_and_process_data():
     
     test_length = int(len(data) * 0.1)
     train_length = len(data) - test_length
-    data_tensor = np.array(data) # turn into torch tensor
-    # eps = 10**-25 # avoid -inf in log
-    # logged_data = 10 * torch.log10(data_tensor + eps) 
-    # transformation based on matlab data (melspectrogram transformation for plotting)
 
     # normalize
-    mean, var = np.mean(data_tensor, axis=0), np.var(data_tensor, axis=0)
-    std = var ** 0.5
-    normed_data = np.divide(np.subtract(data_tensor, mean), std)# normalize 
-    normed_data = normed_data.transpose(0, 2, 1)
+    # mean, var = np.mean(data_tensor, axis=0), np.var(data_tensor, axis=0)
+    # std = var ** 0.5
+    # normed_data = np.divide(np.subtract(data_tensor, mean), std)# normalize 
+    # normed_data = normed_data.transpose(0, 2, 1)
+    data_normed = []
+    for dat in data:
+        mean, std = np.mean(dat), np.var(data) ** 0.5
+        assert(len(mean.shape) < 1 and len(std.shape) < 1)
+        normed_dat = np.divide(np.subtract(dat, mean), std)# normalize 
+        normed_dat = normed_dat.transpose()
+        data_normed.append(normed_dat)
+    normed_data = np.array(data_normed)
 
     # process labels and data loader
     labels_tensor = np.array(data_labels, dtype=int)
@@ -68,10 +73,10 @@ def load_and_process_data():
 inputs, targets, mean, std = load_and_process_data()
 # K-fold Cross Validation model evaluation
 # fold_no = 1
-num_epochs = 600
-learning_rate = 0.3
-momentum = 0.3
-batch_size = 20
+num_epochs = 4000
+learning_rate = 0.01
+momentum = 0.1
+batch_size = 50
 verbosity = False
 acc_per_fold = []
 loss_per_fold = []
@@ -90,7 +95,7 @@ test_inputs, test_labels = inputs[test_idx, :], targets[test_idx, :]
 model = tf.keras.Sequential()
 
 # Adding tdnn1
-context1 = [-1, 0, 1]
+# context1 = [-1, 0, 1]
 model.add(tf.keras.layers.Conv1D(input_shape=[15, 16],
                             filters = 8,
                             kernel_size= 3,
@@ -101,7 +106,7 @@ model.add(tf.keras.layers.Conv1D(input_shape=[15, 16],
                             ))
 
 # Adding tdnn2
-context2 = [-2, 0, 2]
+# context2 = [-2, 0, 2]
 model.add(tf.keras.layers.Conv1D(input_shape=[13, 8],
                             filters = 3,
                             kernel_size= 5,
@@ -138,17 +143,17 @@ history = model.fit(train_inputs, train_labels,
                 batch_size=batch_size,
                 epochs=num_epochs)
 
-print(model.predict(test_inputs))
+predictions = model.predict(test_inputs)
 
-model.save('model1.keras')
+model.save('model2.keras')
 # tf.contrib.saved_model.save_keras_model('model1.keras') #outdated
-model.save('model1.h5')
+model.save('model2.h5')
 
 # save weights
 model.save_weights('weights/my_weights')
 
-np.savetxt('model0_mean.txt', mean, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
-np.savetxt('model0_std.txt', std, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
+# np.savetxt('model2_mean.txt', mean, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
+# np.savetxt('model2_std.txt', std, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
 
 # Generate generalization metrics
 scores = model.evaluate(train_inputs, train_labels, verbose=0)
@@ -180,3 +185,14 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
+
+train_preds = model.predict(train_inputs)
+confusion = tf.math.confusion_matrix(labels=np.argmax(train_labels, axis=1), predictions=np.argmax(train_preds, axis=1))
+print()
+print('the confusion matrix of training dataset')
+print(confusion)
+
+confusion = tf.math.confusion_matrix(labels=np.argmax(test_labels, axis=1), predictions=np.argmax(predictions, axis=1))
+print()
+print('the confusion matrix of test set')
+print(confusion)
