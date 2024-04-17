@@ -2,25 +2,19 @@ import tensorflow as tf
 from mytools import *
 import keras.backend as K
 
-model = tf.keras.models.load_model('model2.keras')
+model = tf.keras.models.load_model('model3.keras')
 
 # Show the model architecture
 model.summary()
 
-# f = 'gah-280.txt'
+f = 'bah-230.txt'
 # f = 'dataset9/g/ga00000-340.txt'
-f = 'guh00000-690.txt'
+# f = 'guh00000-690.txt'
 data = []
 
 load_file(f, label=0, letter='', path_to_training_data=None, data=data)
 
 
-# print(data)
-# data = np.array(data)
-# mean, std = data.mean()
-# data = np.subtract(data, mean)
-# data = np.divide(data, std)
-# data = np.transpose(data, [0, 2, 1])
 data_normed = []
 for dat in data:
     mean, std = np.mean(dat), np.var(data) ** 0.5

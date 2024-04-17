@@ -19,7 +19,7 @@ Polymer('g-spectrogram-mini', {
   thresh: 0.3,
   start_time_ms: -1,
   explaining: false,
-  dataTensorNormed: tf.zeros([16, 15]),
+  dataTensorNormed: tf.zeros([16, 15]), // for storage and display
   data_whole: tf.zeros([16, 1], dtype='float32'),
   frames_since_last_coloured: 0,
   custom_start_time_ms: -1,
@@ -233,9 +233,13 @@ Polymer('g-spectrogram-mini', {
 
     start_time_ms = this.start_time_ms;
     var start_frame = start_time_ms / 10;
-    var the_dat = this.currDat.slice([0, start_frame], [16, 15]);
-
+    console.log('start time in predictModel', start_time_ms);
+    data = tf.transpose(tf.tensor(data), [0, 1]);
+    console.log("data shape", data.shape);
+    console.log("start frame", start_frame, "max", start_frame + 15);
+    var the_dat = data.slice([0, start_frame], [16, 15]);
     // normalize
+    tf.print(the_dat.slice([0, 0], [16, 1]));
     var mean = tf.mean(the_dat);
     var std = tf.moments(the_dat).variance.sqrt();
     var normed_the_dat = tf.div(tf.sub(the_dat, mean), std);
@@ -325,7 +329,7 @@ Polymer('g-spectrogram-mini', {
         document.getElementById('pred3_text').innerHTML = y[2].toLocaleString(
           undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
 
-    localStorage.setItem("currDat", the_dat.arraySync());
+    // localStorage.setItem("currDat", the_dat.arraySync());
     // console.log('currDat dimensions', the_dat.shape);
     localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
     localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
@@ -376,30 +380,6 @@ Polymer('g-spectrogram-mini', {
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.ctx = this.$.canvas.getContext('2d');
       this.onStream(stream);
-
-
-      // predict when amplitude is greater than threshold
-
-      // var date2 = Date.now();
-      // setInterval(() => {
-      //   console.log(this.amplitude_over_thresh);
-        // if(this.amplitude_over_thresh){
-        //   var data_pre = this.currDat2.arraySync();
-        //   this.predictModel(data_pre);
-        //   this.color = true;
-        //   // tf.print(this.currDat2);
-        //   // var date = Date.now();
-        //   // console.log(date - date2);
-        //   // date2 = date;
-        //   // console.log(this.currDat2.shape);
-        //   var longest_frames = 100;
-        //   if(this.currDat2.shape[1] > longest_frames){
-        //     this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
-        //   }
-        // } else {
-        //   this.color = false;
-        // }
-      // }, 200);
     } catch (e) {
       this.onStreamError(e);
     }
@@ -459,13 +439,9 @@ Polymer('g-spectrogram-mini', {
       } else {
         this.stopped = true;
         document.getElementById('start-stop-btn').innerHTML = "Resume";
-        // console.log(data_whole.shape);
         // data_whole shape: 16 times length
-        this.predictModel(this.data_whole.arraySync());
+        console.log("this data whole array sync", this.data_whole.arraySync());
         this.custom_start_time_ms = this.start_time_ms;
-
-        // console.log('the current selection')
-        // tf.print(this.data_whole.arraySync());
       }
     }
 
@@ -507,13 +483,15 @@ Polymer('g-spectrogram-mini', {
       // console.log(data);
       textFile = window.URL.createObjectURL(data);
       console.log('File written successfully to', textFile);
+      console.log("file start time", this.custom_start_time_ms.toString());
       link.href = textFile;
       file_name = this.custom_start_time_ms.toString() + "data.txt"
       link.download = file_name;
       link.click();
     }
-    // console.log(this.stopped);
 
+    // only for downloading data
+    // downloads 1000ms of data
     if(this.file_download){
       document.getElementById('file-write-btn').onclick = () => {
         this.currDat = tf.zeros([16, 1], dtype='float32');
@@ -549,8 +527,6 @@ Polymer('g-spectrogram-mini', {
         currCol = tf.transpose(tf.tensor([currCol]));
         var currDat = tf.concat([this.currDat, currCol], 1);
         this.currDat = currDat;
-        // console.log('376', this.currDat);
-        // this.predictModel();
       }
     } else {
       // predicting
@@ -558,6 +534,7 @@ Polymer('g-spectrogram-mini', {
       currCol = tf.transpose(tf.tensor([currCol]));
       var currDat = tf.concat([this.currDat, currCol], 1);
       this.currDat = currDat;
+
       if (this.writing == false && this.stopped == false){
         this.frames_since_last_coloured ++;
       } else if (this.writing == true && this.stopped == false){

@@ -22,7 +22,12 @@ def load_and_process_data():
     files = []
 
     load_dataset("dataset9/", data, data_labels, files, 9, 0)
-    load_dataset("dataset9/other_data/", data, data_labels, files, 9, 0)
+    load_dataset_shifted("dataset9/", data, data_labels, files, 9, 0, 1)
+    load_dataset_shifted("dataset9/", data, data_labels, files, 9, 0, -1)
+    # load_dataset("dataset9/other_data/", data, data_labels, files, 9, 0)
+    load_dataset("dataset11/", data, data_labels, files, 11, 0)
+    load_dataset_shifted("dataset11/", data, data_labels, files, 11, 0, 1)
+    load_dataset_shifted("dataset11/", data, data_labels, files, 11, 0, -1)
 
     assert(len(data) == len(data_labels) and len(data) == len(files))
 
@@ -73,8 +78,8 @@ def load_and_process_data():
 inputs, targets, mean, std = load_and_process_data()
 # K-fold Cross Validation model evaluation
 # fold_no = 1
-num_epochs = 4000
-learning_rate = 0.01
+num_epochs = 2000
+learning_rate = 0.05
 momentum = 0.1
 batch_size = 50
 verbosity = False
@@ -141,16 +146,17 @@ model.compile(opt, loss, metrics=['accuracy'])
 history = model.fit(train_inputs, train_labels,
                     validation_split=0.1,
                 batch_size=batch_size,
-                epochs=num_epochs)
+                epochs=num_epochs,
+                verbose=False)
 
 predictions = model.predict(test_inputs)
 
-model.save('model2.keras')
+model.save('model3.keras')
 # tf.contrib.saved_model.save_keras_model('model1.keras') #outdated
-model.save('model2.h5')
+model.save('model3.h5')
 
 # save weights
-model.save_weights('weights/my_weights')
+# model.save_weights('weights/my_weights')
 
 # np.savetxt('model2_mean.txt', mean, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)
 # np.savetxt('model2_std.txt', std, fmt='%.18e', delimiter=', ', newline='],\n[', header='[', footer=']', comments='', encoding=None)

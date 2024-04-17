@@ -1,10 +1,10 @@
 model 0
 
-model 1: 
+model 1:  (trained on dataset9)
 Train performance: loss of 0.01913820393383503; accuracy of 97.09677696228027%
 Test performance: loss of 0.07405642420053482; accuracy of 86.95651888847351%
 
-model 2: (normalize case to case)
+model 2: (normalize case to case, trained on dataset9)
 Train performance: loss of 0.07623497396707535; accuracy of 91.12903475761414%
 Test performance: loss of 0.110186368227005; accuracy of 81.15941882133484%
 the confusion matrix of training dataset
@@ -18,4 +18,20 @@ tf.Tensor(
 [[19  1  2]
  [ 3 22  3]
 [ 1  3 15]], shape=(3, 3), dtype=int32)
+
+model3: (trained on dataset 9 and 11, onlly bah dah guh)
+Train performance: loss of 0.011524799279868603; accuracy of 99.82174634933472%
+Test performance: loss of 0.023236101493239403; accuracy of 96.82539701461792%
+the confusion matrix of training dataset
+the confusion matrix of training dataset
+tf.Tensor(
+[[184   0   0]
+ [  0 188   0]
+ [  0   1 188]], shape=(3, 3), dtype=int32)
+
+the confusion matrix of test set
+tf.Tensor(
+[[25  0  0]
+ [ 0 21  0]
+ [ 0  2 15]], shape=(3, 3), dtype=int32)
 
