@@ -380,24 +380,6 @@ Polymer('g-spectrogram-mini', {
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.ctx = this.$.canvas.getContext('2d');
       this.onStream(stream);
-<<<<<<< HEAD
-       // predict every 200 ms
-      var date2 = Date.now();
-      setInterval(() => {
-        var data_pre = this.currDat2.arraySync();
-        this.predictModel(data_pre);
-        // tf.print(this.currDat2);
-        // var date = Date.now();
-        // console.log(date - date2);
-        // date2 = date;
-        // console.log(this.currDat2.shape);
-        var longest_frames = 200;
-        if(this.currDat2.shape[1] > longest_frames){
-          this.currDat2 = tf.slice(this.currDat2, [0, this.currDat2.shape[1] - longest_frames], [16, longest_frames]);
-        }
-      }, 200);
-=======
->>>>>>> main
     } catch (e) {
       this.onStreamError(e);
     }
