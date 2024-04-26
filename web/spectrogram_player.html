@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="bower_components/platform/platform.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="import" href="g-spectrogram.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="../model23.js"></script>
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header-content">
+        <h2>Time-Delay Neural Network Demo</h2>
+      </div>
+      <div class="btn-bar">
+        <div class="show-btn" id="file-write-btn">Start File Write</div>
+        <div class="show-btn" id="predict-btn">Record Sample</div>
+        <div class="show-btn" id="switch-act-btn">Switch</div>
+        <a href="explain.html"><div class="show-btn" id="explain">Explain</div></a>
+        <a href="weight.html"><div class="show-btn" id="weight">See Weights</div></a>
+      </div>
+      <div class="instructions">
+      </div>
+    </div>
+    <div class="body-wrapper-index">
+      <div class="spectrograms">
+
+        
+        <div class="spectrogram-wrapper-mini" id="mini-spectrogram">
+          <g-spectrogram-mini controls labels log oscillator speed="10"></g-spectrogram>
+        </div>
+      </div>
+    </div>
+    </div>
+  </body>
+</html>

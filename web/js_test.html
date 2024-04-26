@@ -9,13 +9,40 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.13.0/dist/tf.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-    <script type="module" src="../model19.js"></script>
+    <script src="../model23.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-heatmap.min.js"></script> 
 
     <style>
       .btn1{
         border: 1px solid black;
         padding: 5px 10px;
         border-radius: 10px;
+      }
+
+      #plot-cont{
+        width: 70%;
+        height: 50vh;
+      }
+
+      #browser-btn{
+        border: 3px solid black;
+        padding: 15px;
+        margin: 25px;
+        border-radius: 10px;
+        color: black;
+      }
+
+      .form{
+        border: 3px solid black;
+        padding: 15px;
+        margin: 25px;
+        border-radius: 10px;
+        color: black;
+      }
+
+      .pv{
+        margin: 25px;
       }
     </style>
   </head>
@@ -25,16 +52,304 @@
         <h2>Testing the Javascript Model</h2>
       </div>
     </div>
-    <div class="content-wrapper">
+    <div class="">
       Please go to console.
-      <form>
-        <input type="file" id="filepicker" webkitdirectory directory multiple/>
+      <form enctype="multipart/form-data" action="/upload" method="post" class="form">
+        <input id="input" type="file" />
+        <!-- <input id="start-time" type="text"> -->
       </form>
-      <a class="btn1" id="submit">submit</a>
+
+      <div id="browser-btn">Load info from browser</div>
+      <!-- <a class="btn1" id="submit">submit</a> -->
     </div>
-    <a class="btn1" id="single">single_sample_debug</a>
+    <!-- <a class="btn1" id="single">single_sample_debug</a> -->
+    <div class="pv">predicted values:<div id="predicted-vals"></div></div>
     <div id="class34">0</div>
     
-    <canvas></canvas>
+    <canvas id='canvas'></canvas>
+    <div id="plot-cont"></div>
+
+    <script>
+      log = false
+
+      function predictModel(data, starttime){
+        var matrix = data;
+        var the_dat = tf.tensor(data);
+
+        if(starttime == -1){
+          const numRows = matrix.length;
+          const numCols = matrix[0].length; // Assuming all rows have the same number of columns
+          
+          const columnSums = new Array(numCols).fill(0);
+        
+          for (let col = 0; col < numCols; col++) {
+            for (let row = 0; row < numRows; row++) {
+              columnSums[col] += 10**(matrix[row][col]);
+            }
+          }
+
+          // custom max
+          var arguments = columnSums
+          if (arguments.length === 0) {
+            return undefined; // Return undefined if no arguments are provided
+          }
+          let max = -Infinity; // Start with a very low value
+          for (let i = 1; i < arguments.length; i++) {
+            if (arguments[i] > max) {
+              max = arguments[i];
+            }
+          }
+          
+          // normalize
+          var array_2 = Array(columnSums);
+          for(var i = 0, length = columnSums.length; i < length; i++){
+              array_2[i] = columnSums[i] / max;
+          }
+
+          // find max
+          const thresh_indexes = [];
+          for (let i = 2; i < array_2.length; i++) {
+            if (array_2[i] > 0.3) {
+              thresh_indexes.push(i);
+            }
+          }
+          
+          start_time_ms = thresh_indexes[0]*10 - 20;
+          currDat = tf.tensor(data);
+            // const start_time_ms = await this.findMaxFreq(data);
+          
+        } 
+        else {
+          start_time_ms = starttime;
+          currDat = tf.tensor(data);
+        }
+          
+        var start_frame = start_time_ms / 10;
+        console.log('currDat.shape', currDat.shape);
+        console.log('startime', start_time_ms);
+        the_dat = currDat;//currDat.slice([0, start_frame], [16, 15]);
+
+        var dataTensor = tf.stack([the_dat]);
+        var print = false;
+
+        console.log('dataTensor.shape', dataTensor.shape, "dataTensor:");
+        tf.print(dataTensor);
+        // mean and std transformation
+        var subbed = tf.sub(dataTensor, mean);
+        var dataTensorNormed = tf.div(subbed, std);
+        self.dataTensorNormed = dataTensorNormed;
+        var dataTensorNormedTransposed = tf.transpose(dataTensorNormed, [0, 2, 1]);
+        tf.print(dataTensorNormedTransposed);
+        // var dataTensorNormedTransposed = tf.transpose(dataTensor, [0, 2, 1]);
+
+        var y = model.predict(dataTensorNormedTransposed, {batchSize: 1});
+        y = y.dataSync()
+        console.log('the outputs', y);
+        // var max_y = Math.max.apply(null, y);
+        // var min_y = Math.min.apply(null, y);
+        // var y_scaled = [0, 0, 0];
+        // for (i=0; i<3; i++){
+        //   y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
+        // }
+        document.getElementById("predicted-vals").innerHTML = y.toString();
+      }
+
+      document.getElementById('browser-btn').onclick = () => {
+          // var currDat = localStorage.getItem('dataWhole');
+          var currDat = localStorage.getItem('currDat');
+          console.log('string of data', currDat);
+          var ret = [];
+          var ret2 = []
+          currDat = currDat.split(",");
+          var numRows = 16;
+          var numCols = Math.floor(currDat.length / 16);
+          console.log('numrows, numcols', numRows, numCols);
+          var starttime = parseInt(localStorage.getItem('starttime')) / 10;
+          console.log('starttime', starttime);
+          console.log('fbnhasljvf', tf.tensor([[1, 2, 3], [4, 5, 6]]).arraySync());
+          localStorage.setItem('debug', tf.tensor([[1, 2, 3], [4, 5, 6]]).arraySync());
+          console.log(localStorage.getItem('debug'));
+          console.log()
+          // currDat is [[] * 16] * numCols
+          for(i=0; i<numRows; i++){
+            var tempArr = []
+              // for(j=starttime; j<starttime + 15; j++){
+              for (j = 0; j < numCols; j++){
+                let index = i*numCols + j;
+                let a = parseFloat(currDat[index]);
+                tempArr.push(a);
+                if (j >= starttime && j < starttime + 15){
+                  ret2.push({
+                          x: j,
+                          y: i,
+                            heat: a});
+                }
+              }
+            ret.push(tempArr);
+          }
+          console.log('ret shape', tf.tensor(ret).shape);
+          console.log('predicting');
+          var matrix = [[ -87.7668,  -86.3604,  -83.2363,  -80.6449,  -79.9664,  -82.3066,
+          -84.8482,  -82.9884,  -80.1920,  -72.9877,  -72.1857,  -74.1206,
+          -77.9632,  -78.7257,  -80.3240],
+        [ -79.0807,  -76.7115,  -72.0675,  -70.8442,  -75.7563,  -73.2464,
+          -72.8026,  -67.5291,  -63.4916,  -63.6024,  -65.9607,  -67.5775,
+          -70.2782,  -68.1343,  -66.0596],
+        [ -58.2885,  -52.6788,  -45.7783,  -44.1526,  -47.5560,  -50.6819,
+          -51.2634,  -51.5417,  -50.3772,  -50.9973,  -50.9691,  -51.4143,
+          -50.0539,  -50.2465,  -51.9872],
+        [ -70.1207,  -65.9210,  -61.0790,  -60.4268,  -64.0798,  -66.0207,
+          -64.5708,  -63.7333,  -64.8727,  -61.0435,  -60.0452,  -55.5617,
+          -54.9545,  -55.6990,  -54.5144],
+        [ -73.6271,  -69.5928,  -61.7437,  -59.8873,  -56.9231,  -57.0877,
+          -57.8315,  -59.9860,  -60.7907,  -65.2674,  -68.3704,  -70.1993,
+          -71.7863,  -73.2551,  -79.0490],
+        [ -89.0562,  -88.3475,  -86.4851,  -85.9313,  -85.4745,  -85.8141,
+          -86.0189,  -86.1400,  -85.7665,  -87.5998,  -88.8197,  -91.0934,
+          -89.6120,  -88.0750,  -85.8280],
+        [ -94.5301,  -95.1960,  -96.5491,  -96.4631,  -93.7662,  -93.2654,
+          -93.3778,  -94.2352,  -95.2978,  -94.6317,  -95.1150,  -97.1804,
+          -96.6973,  -96.3396,  -96.2466],
+        [ -96.7575,  -96.0176,  -94.4469,  -93.8918,  -94.9188,  -96.7923,
+          -97.0014,  -96.2747,  -94.8974,  -92.9715,  -92.3492,  -93.7776,
+          -95.6202,  -97.1024,  -98.0128],
+        [ -84.7659,  -83.1861,  -83.1311,  -84.9629,  -88.3206,  -88.6138,
+          -87.7560,  -88.1057,  -91.2587,  -93.0268,  -93.7084,  -95.4643,
+          -97.0728,  -97.0498,  -97.7035],
+        [ -77.0142,  -75.2550,  -75.0010,  -75.5760,  -77.9508,  -81.9843,
+          -82.4650,  -84.6283,  -86.7874,  -87.4169,  -88.3761,  -90.8096,
+          -92.4096,  -93.0772,  -93.9692],
+        [ -86.5591,  -82.4510,  -77.1736,  -76.2002,  -79.2158,  -79.8920,
+          -80.8378,  -84.4143,  -87.3741,  -91.0447,  -92.1267,  -92.4686,
+          -92.2856,  -93.0803,  -95.3582],
+        [ -93.4672,  -88.4956,  -77.9365,  -74.5282,  -72.5813,  -78.5862,
+          -83.8547,  -97.6057,  -97.9621, -102.1147, -101.9255,  -98.8989,
+          -99.2455, -101.7066, -105.1354],
+        [ -87.5897,  -82.6813,  -75.1389,  -72.7063,  -72.4823,  -78.5207,
+          -83.1942,  -92.8512,  -96.0370, -100.2635,  -99.1749,  -94.3559,
+          -94.8451,  -96.7693,  -98.9291],
+        [ -88.0339,  -83.1453,  -75.4517,  -73.0511,  -73.3795,  -79.5941,
+          -84.6801,  -96.2013,  -91.4305,  -91.9925,  -92.2674,  -90.5192,
+          -88.6395,  -88.5360,  -90.0721],
+        [-100.3136,  -90.6615,  -77.7374,  -74.6294,  -75.9765,  -84.1742,
+          -86.2706,  -85.6923,  -87.1427,  -92.7241, -100.5357,  -90.5171,
+          -85.5462,  -85.0690,  -86.9536],
+        [ -91.4929,  -85.8450,  -76.7442,  -74.2788,  -76.3704,  -83.8588,
+          -85.5482,  -83.8622,  -85.6926,  -89.2051,  -89.1430,  -85.6885,
+          -83.2202,  -83.3304,  -86.9450]]
+          // predictModel(matrix, localStorage.getItem('starttime'));
+          predictModel(matrix, 550);
+          // paintCanvas(matrix);
+
+          console.log('displaying');
+          display(ret2);
+          console.log('done');
+      }
+
+      document.getElementById('input').addEventListener('change', () => {
+        let file = document.getElementById('input').files[0];
+
+        (async () => {
+          const fileContent = await file.text();
+          const words = fileContent.split('\n')
+          const matrix = Array(16);
+          for (var i = 0; i < 16; i ++){
+            matrix[i] = words[i].split(',').map(function(item) {
+                return parseInt(item, 10);
+            });
+          }
+
+          console.log('.text()', matrix);
+          console.log('predicting');
+          predictModel(matrix, -1);
+          paintCanvas(matrix);
+
+          var ret = []
+          for(i=matrix.length - 1; i >= 0; i--){
+              for(j=1; j<matrix[0].length; j++){
+                  let a = matrix[i][j]
+                  // console.log(i, j, i + numRows * j,a);
+                  ret.push({x: j,
+                              y: i,
+                              heat: a});
+              }
+          }
+          console.log('displaying');
+          display(ret);
+          console.log('done');
+        })();
+
+        
+      });
+    
+      function getFullColor(value) {
+        var fromH = 62;
+        var toH = 0;
+        var percent = value / 255;
+        var delta = percent * (toH - fromH);
+        var hue = fromH + delta;
+        return 'hsl(H, 100%, 50%)'.replace(/H/g, hue);
+      }
+
+      function logBase(val, base) {
+        return Math.log(val) / Math.log(base);
+      }
+
+      function logScale (index, total, opt_base) {
+        var base = opt_base || 2;
+        var logmax = this.logBase(total + 1, base);
+        var exp = logmax * index / total;
+        return Math.round(Math.pow(base, exp) - 1);
+      }
+
+      function paintCanvas(data){
+        height = window.innerHeight;
+        speed = 10;
+        width = speed * data[0].length;
+        console.log(height, speed, width)
+        var tempCtx = document.getElementById('canvas').getContext('2d');
+
+        // Iterate over the frequencies.
+        for(var r = 0; r < data.length; r ++){
+          var freq16 = data[r];
+          for (var i = 0; i < 16; i++) {
+            var value;
+            if (log) {
+              logIndex = logScale(i, 16);
+              value = freq16[logIndex];
+            } else {
+              value = freq16[i];
+            }
+
+            // console.log(value)
+
+            // console.log("16 process value: ", value);
+            tempCtx.fillStyle = getFullColor(value)
+
+            var percent = i / 16;
+            var y = Math.round(percent * height + 80);
+
+            tempCtx.fillRect(speed * r, height - y,
+                        speed, height / 16);
+          }
+        }
+      }
+
+      function display(data){
+        anychart.onDocumentReady(function () {
+            // create a heatmap
+            let chart = anychart.heatMap(data);
+            let colorScale = anychart.scales.linearColor('#ffdc00', '#ff3c00');
+            chart.colorScale(colorScale);
+            // name the heatmap
+            chart.title("16 frequencies over 15 10-ms time frames: Normalized Data");
+            // chart.yScale().inverted(true);
+            // set the container for the heatmap
+            chart.container("plot-cont");
+            // draw the heatmap
+            chart.draw();
+        });
+      } 
+    </script>
   </body>
 </html>

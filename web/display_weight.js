@@ -16,8 +16,8 @@ window.onload = function(){
         for(i=0; i<numCols; i++){
             for(j=0; j<numRows; j++){
                 // console.log(i, j, i + numRows * j, arr[i + numRows * j]);
-                ret.push({x: i,
-                            y: j,
+                ret.push({x: i+1,
+                            y: j+1,
                             heat: arr[i*numRows + j]})
             }
         }
@@ -31,7 +31,7 @@ window.onload = function(){
         var numCols = arr.length;
         var ret = [];
         for(i=0; i<numCols; i++){
-            ret.push({x: i, y: 1,
+            ret.push({x: i+1, y: 1,
                             heat: arr[i]});
         }
         // console.log('return value', ret);
@@ -46,8 +46,8 @@ window.onload = function(){
         for(i=0; i<numCols; i++){
             for(j=0; j<numRows; j++){
                 // console.log(i, j, i + numRows * j, arr[i + numRows * j]);
-                ret.push({x: i,
-                            y: j,
+                ret.push({x: i+1,
+                            y: j+1,
                             heat: arr[i*numRows + j]})
             }
         }

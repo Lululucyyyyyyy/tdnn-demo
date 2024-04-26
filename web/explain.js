@@ -17,7 +17,7 @@ function getData(){
     console.log(currDat);
     currDat = currDat.split(",");
     // console.log(currDat.length);
-    var numRows = 15;
+    var numRows = 16;
     var numCols = Math.floor(currDat.length / 15);
     // console.log(numCols);
     for(i=0; i<numCols; i++){
@@ -51,17 +51,19 @@ anychart.onDocumentReady(function () {
 function getNormedData(){
     var dataTensorNormedArr = localStorage.getItem("dataTensorNormed");
     var ret = [];
-    dataTensorNormed = dataTensorNormedArr.split(",");
-    // console.log(dataTensorNormed.length);
+    dataTensorNormed = dataTensorNormedArr.replace(/[\[\]']+/g, '')
+    dataTensorNormed = dataTensorNormed.split(",");
+    // console.log(dataTensorNormed);
     var numRows = 15;
     var numCols = Math.floor(dataTensorNormed.length / 15);
     // console.log(numCols);
     for(i=0; i<numCols; i++){
         for(j=0; j<numRows; j++){
-            // console.log(i, j, i + numRows * j,dataTensorNormed[i + numRows * j]);
+            let a = dataTensorNormed[i + j*numRows].replace(/[{()}]/g, '');
+            // console.log(i, j, i + numRows * j,a);
             ret.push({x: j,
                         y: i,
-                        heat: dataTensorNormed[i + j*numRows]})
+                        heat: a});
         }
     }
     // console.log('return value', ret)

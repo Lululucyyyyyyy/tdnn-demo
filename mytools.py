@@ -19,6 +19,8 @@ import random
 import math
 import torch
 import ast
+from os.path import isfile, join
+import torch.nn as nn
 
 # file renaming threshold
 thresh = 0.1
@@ -68,6 +70,9 @@ def extract_start_time(file, compare=True):
 		snum = "{:05d}".format(snum)
 		txt = new_parts[-1].split('.')[1]
 		new_name = part1 + name + snum + "-" + str(start_time_ms[0]) + "." + txt
+		if new_name[0] == "/":
+			new_name = new_name[1:]
+		print(file, new_name)
 		os.rename(file, new_name)
 	return start_time_ms
 
@@ -84,7 +89,7 @@ def align_dataset(file_path, comp=True):
 	for f in sorted(os.listdir(file_path + "g")):
 		extract_start_time(file_path+"g/" + f, compare=comp)
 
-def load_file(f, label, letter, path_to_training_data, data, data_labels, files):
+def load_file(f, label, letter, path_to_training_data, data, data_labels=None, files=None):
 	'''
 	helper function that loads a file to data, and its label to data_labels
 	inputs:
@@ -99,12 +104,27 @@ def load_file(f, label, letter, path_to_training_data, data, data_labels, files)
 		return
 	fs = f.split("-") # split file name to get starting frame
 	start = int(fs[1].split('.')[0])//10
-	with open(path_to_training_data+letter+"/"+f, 'r') as g:
-		mel_spectrogram = [[float(num) for num in line.split(',')][start:start + 15] for line in g]
-		data.append(mel_spectrogram)
-		files.append(f)
-	g.close()
-	data_labels.append(label)
+	if path_to_training_data is None:
+		with open(f, 'r') as g:
+			mel_spectrogram = [[float(num) for num in line.split(',')][start:start + 15] for line in g]
+			data.append(mel_spectrogram)
+			if files is not None:
+				files.append(f)
+			if (np.array(mel_spectrogram).shape != (16, 15)):
+				print(f, np.array(mel_spectrogram).shape)
+		g.close()
+	else:
+		with open(path_to_training_data+letter+"/"+f, 'r') as g:
+			mel_spectrogram = [[float(num) for num in line.split(',')][start:start + 15] for line in g]
+			data.append(mel_spectrogram)
+			if files is not None:
+				files.append(f) 
+			if (np.array(mel_spectrogram).shape != (16, 15)):
+				print(f, np.array(mel_spectrogram).shape)
+		g.close()
+
+	if data_labels != None:
+		data_labels.append(label)
 
 def load_file_shifted(f, label, letter, path_to_training_data, data, data_labels, files, num_frames_shifted):
 	'''
@@ -132,9 +152,9 @@ def load_file_shifted(f, label, letter, path_to_training_data, data, data_labels
 				mel_spectrogram.append([float(num) for num in line.split(',')][start:start + 15])
 		if not broken:
 			data.append(mel_spectrogram)
+			data_labels.append(label)
 			files.append(f)
 	g.close()
-	data_labels.append(label)
 
 def load_null_sample(f, letter, path_to_training_data, data, data_labels, files):
 	'''
@@ -366,6 +386,108 @@ def name(file_path, word, start):
 	for i, f in enumerate(sorted(os.listdir(file_path))):
 		file_name = word + str(start + i) + ".txt"
 		os.rename(file_path + f, file_path + file_name)
+
+def display_both(path):
+	'''
+	given a path to file, displays the spectrogram and predictions
+	'''
+	transpose = False
+	already_list = False
+	spectrogram = []
+	with open(path, 'r') as f:
+		if (already_list):
+			spectrogram = ast.literal_eval(f.read())
+		else:
+			spectrogram = [[float(num) for num in line.split(',')] for i, line in enumerate(f) if i != 0]
+	f.close()
+
+	# print(spectrogram)
+	spectrogram_np = np.array(spectrogram)
+	if transpose:
+		spectrogram_np = spectrogram_np.T
+	eps = 10**-25 # avoid log error
+	#spectrogram_np = np.log(spectrogram_np + eps)
+	# print(melSpectrogram_np)
+
+	fig = plt.figure(figsize=(9, 7))
+	ax = fig.add_subplot(2, 1, 1)
+	ax.set_title('melSpectrogram')
+	plt.imshow(spectrogram_np, origin = 'lower', aspect='auto')
+	ax.set_aspect(aspect='auto')
+
+	cax = fig.add_axes([0.12, 0.1, 0.78, 0.8])
+	cax.get_xaxis().set_visible(False)
+	cax.get_yaxis().set_visible(False)
+	cax.patch.set_alpha(0)
+	cax.set_frame_on(False)
+	plt.colorbar(orientation='vertical')
+
+	model_params_path = 'model_params/model_params_023'
+	model_params = torch.load(model_params_path)
+	model = model_params['model']
+	mean = model_params['mean']
+	std = model_params['std']
+
+	spectrogram_file_path = path
+	fs = spectrogram_file_path.split("-") # split file name to get starting frame
+	file_name = spectrogram_file_path.split('.')[0]
+	time = int(file_name.split('-')[1]) / 10
+
+	start = int(fs[1].split('.')[0])//10
+	with open(spectrogram_file_path) as g:
+		mel_spectrogram = [[float(num) for num in line.split(',')] for line in g]
+	g.close()
+
+	data = []
+	for x in range(0, len(mel_spectrogram[0]) - 15 + 1):
+		curr_ms = [line[x:x+15] for line in mel_spectrogram]
+		data.append(curr_ms)
+
+	# data processing with same parameters as model
+	data_tensor = torch.Tensor(data)
+	# logged_data = 10*torch.log10(data_tensor + 10**-25)
+	normed_data = (data_tensor - mean)/std
+	inputs = normed_data
+
+	# print('data')
+	# print(data_tensor)
+	# print('inputs')
+	# print(inputs)
+
+	output_b = []
+	output_d = []
+	output_g = []
+	output_null = []
+
+	timeline = [i for i in range(len(inputs))]
+
+	for i, curr_input in enumerate(inputs):
+		curr_input = curr_input.reshape([1, 16, 15])
+		outputs = model(curr_input)
+		_, predicted = torch.max(outputs.data, 1)
+		output_b.append(outputs[0][0].item())
+		output_d.append(outputs[0][1].item())
+		output_g.append(outputs[0][2].item())
+		# output_null.append(outputs[0][3].item())
+		if i == time:
+			print('model predicted at true timeframe', predicted)
+			# print('melspectrogram:')
+			# print(curr_input)
+	output_b += [0] * 15
+	output_d += [0] * 15
+	output_g += [0] * 15
+	ax = fig.add_subplot(2, 1, 2)
+	
+	ax.set_title('melSpectrogram of ' + file_name)
+
+	line1, = ax.plot(output_b, color="skyblue", label="b")	
+	line2, = ax.plot(output_d, color="mediumslateblue", label="d")	
+	line3, = ax.plot(output_g, color="plum", label="g")	
+	# line4, = ax.plot(output_null, color="red", label="null")	
+	plt.plot([time] * 2, [0, 1], color="khaki")
+
+	ax.legend([line1, line2, line3], ["b", "d", "g"])
+	plt.show()
 
 
 # name("dataset9/naming/", "bait", 0)

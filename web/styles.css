@@ -68,6 +68,17 @@ a{
   align-items: center;
   justify-content: center;
 }
+
+.custom-btn{
+  padding: 5px 10px;
+  border-radius: 10px;
+  margin: 10px;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+}
 /* ============================================= */
 /* ================= INDEX.HTML  =============== */
 /* ============================================= */
@@ -80,14 +91,15 @@ a{
   padding: 5px 10px;
   border-radius: 10px;
   width: 150px;
-  color: var(--c2)
+  color: var(--c2);
+  display: none;
 }
 
 #predict-btn{
   border: 3px solid var(--c3);
   padding: 5px 10px;
   border-radius: 10px;
-  display: none;
+  display: block;
   width: 150px;
   color: var(--c3)
 }
@@ -113,6 +125,27 @@ a{
   color: var(--c3);
 }
 
+#start-stop-btn{
+  border: 3px solid var(--c3);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c3);
+}
+
+#download{
+  border: 3px solid var(--c4);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c4);
+}
+
+#store-in-browser{
+  border: 3px solid var(--c2);
+  padding: 5px 10px;
+  border-radius: 10px;
+  color: var(--c2);
+}
+
 /* ================= wrappers ==================== */
 
 .instructions{
@@ -125,6 +158,15 @@ a{
   flex-direction: row;
   align-items: left;
   justify-content: left;
+}
+
+.custom-button-wrappers{
+  border: 1px solid black;
+  width: 500px;
+  position: absolute;
+  bottom: 7vh;
+  left: 3vh;
+  display: flex;
 }
 
 /* ================= text ==================== */
@@ -230,7 +272,6 @@ span.highlight4{
   height: 1vh;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  
 }
 
 #pred4{
@@ -239,7 +280,10 @@ span.highlight4{
   height: 1vh;
   transform: translateY(-30px);
   transition: all 0.2s ease;
-  
+}
+
+.pred-label{
+  margin-bottom: 50px;
 }
 
 .pred-class-wrapper{
