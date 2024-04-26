@@ -38,6 +38,7 @@ Polymer('g-spectrogram-mini', {
                   6430.3, 7716.1, 9233.7],
   sampledIdx: [5, 12, 19, 28, 39, 51, 65, 103, 127, 155, 189, 228, 274, 329, 394],
   sampledIdxBuckets: [0, 8, 15, 33, 45, 58, 84, 115, 141, 172, 208, 251, 201, 362, 500],
+  mouseOnPred: false,
   
   attachedCallback: async function() {
     this.tempCanvas = document.createElement('canvas'),
@@ -233,13 +234,10 @@ Polymer('g-spectrogram-mini', {
 
     start_time_ms = this.start_time_ms;
     var start_frame = start_time_ms / 10;
-    console.log('start time in predictModel', start_time_ms);
     data = tf.transpose(tf.tensor(data), [0, 1]);
-    console.log("data shape", data.shape);
-    console.log("start frame", start_frame, "max", start_frame + 15);
     var the_dat = data.slice([0, start_frame], [16, 15]);
     // normalize
-    tf.print(the_dat.slice([0, 0], [16, 1]));
+    // tf.print(the_dat.slice([0, 0], [16, 1]));
     var mean = tf.mean(the_dat);
     var std = tf.moments(the_dat).variance.sqrt();
     var normed_the_dat = tf.div(tf.sub(the_dat, mean), std);
@@ -252,7 +250,7 @@ Polymer('g-spectrogram-mini', {
     
     // var y = self.model.predict(dataTensorNormedTransposed);
     y = y.dataSync()
-    console.log(y);
+    // console.log(y);
     var max_y = Math.max.apply(null, y);
     var min_y = Math.min.apply(null, y);
     var y_scaled = [0, 0, 0];
@@ -316,8 +314,7 @@ Polymer('g-spectrogram-mini', {
     for (i=0; i<3; i++){
       y_scaled[i] = (y[i] - min_y) / (max_y - min_y);
     }
-    // console.log(y_scaled);
-    
+
     // replaces the text in the result tag by the model prediction
     document.getElementById('pred1').style = "height: "+y_scaled[0] * 30 +"vh";
     document.getElementById('pred2').style = "height: "+y_scaled[1] * 30 +"vh";
@@ -329,11 +326,8 @@ Polymer('g-spectrogram-mini', {
         document.getElementById('pred3_text').innerHTML = y[2].toLocaleString(
           undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
 
-    // localStorage.setItem("currDat", the_dat.arraySync());
-    // console.log('currDat dimensions', the_dat.shape);
     localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
     localStorage.setItem("dataTensorNormed", JSON.stringify(dataTensorNormed.arraySync()));
-    // console.log('stored');
 
     const classes = ["b", "d", "g", "null"];
     var predictedClass = tf.argMax(y).array()
@@ -343,31 +337,6 @@ Polymer('g-spectrogram-mini', {
     )
     .catch(err =>
       console.log(err));
-  },
-
-  doneTimer: function() {
-    console.log("1s pause");
-    this.writing = false;
-    this.color = false;
-    console.log('after timeout')
-    console.log(this.writing, this.color);
-    console.log(this.currDat);
-    var link = document.createElement('a');
-    var data_pre = this.currDat.arraySync();
-    console.log('currDat arraysync', currDat.arraySync());
-    var str = "";
-    for (row in data_pre) {
-      str += data_pre[row].toString();
-      str += '\n';
-    }
-    var data = new Blob([str], {type: 'text/plain'});
-    console.log(data);
-    textFile = window.URL.createObjectURL(data);
-    console.log('File written successfully to', textFile);
-    link.href = textFile;
-    link.download = "data.txt";
-    link.click();
-    document.getElementById('file-write-btn').innerHTML = "Start File Write";
   },
 
   createAudioGraph: async function() {
@@ -387,7 +356,6 @@ Polymer('g-spectrogram-mini', {
 
   render: function() {
     var n = Date.now();
-    // console.log("time diff:", n - this.now);
     this.now = n;
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -405,33 +373,6 @@ Polymer('g-spectrogram-mini', {
       didResize = true;
     }
 
-    // stop button
-    // document.getElementById('mini-spectrogram').onclick = () => {
-    //   if (this.audioContext.state == "running"){
-    //     console.log('mini clicked, stopping now');
-    //     this.audioContext.suspend().then( () => {
-    //       this.going = false;
-    //     });
-    //   } else if (this.audioContext.state == "suspended"){
-    //     console.log('mini clicked, starting again');
-    //     this.audioContext.resume().then(() => {
-    //       this.going = true;
-    //     });
-    //   }
-    // }
-
-    document.getElementById('switch-act-btn').onclick = () => {
-      if (this.file_download){
-        this.file_download = false;
-        document.getElementById('file-write-btn').style = "display: none;";
-        document.getElementById('predict-btn').style = "display: block;";
-      } else {
-        this.file_download = true;
-        document.getElementById('file-write-btn').style = "display: block;";
-        document.getElementById('predict-btn').style = "display: none;";
-      }
-    }
-
     document.getElementById('start-stop-btn').onclick = () => {
       if (this.stopped){
         this.stopped = false;
@@ -440,18 +381,10 @@ Polymer('g-spectrogram-mini', {
         this.stopped = true;
         document.getElementById('start-stop-btn').innerHTML = "Resume";
         // data_whole shape: 16 times length
-        console.log("this data whole array sync", this.data_whole.arraySync());
+        // console.log("this data whole array sync", this.data_whole.arraySync());
         this.custom_start_time_ms = this.start_time_ms;
       }
     }
-
-    document.getElementById('store-in-browser').onclick = () => {
-      console.log('storing data');
-      this.storeData();
-      // console.log(localStorage.getItem("dataTensorNormed"));
-      console.log(localStorage.getItem("starttime"));
-    }
-
     document.getElementById('spec-left').onclick = () => {
       console.log('left clicked');
       this.custom_start_time_ms -= 10;
@@ -480,87 +413,79 @@ Polymer('g-spectrogram-mini', {
         str += '\n';
       }
       var data = new Blob([str], {type: 'text/plain'});
-      // console.log(data);
       textFile = window.URL.createObjectURL(data);
       console.log('File written successfully to', textFile);
-      console.log("file start time", this.custom_start_time_ms.toString());
       link.href = textFile;
       file_name = this.custom_start_time_ms.toString() + "data.txt"
       link.download = file_name;
       link.click();
     }
 
-    // only for downloading data
-    // downloads 1000ms of data
-    if(this.file_download){
-      document.getElementById('file-write-btn').onclick = () => {
+    let predict_btn = document.getElementById('predict-btn');
+  
+    // predict_btn.addEventListener("mousedown", () => {
+    //   this.writing = true;
+    //   this.mouseOnPred = true;
+    // });
+    // predict_btn.addEventListener("mouseup", () => {
+    //   this.writing = true;
+    //   this.mouseOnPred = true;
+    // });
+    // predict_btn.addEventListener("mouseout", () => this.mouseOnPred = false);
+
+
+    // predicting
+    var currCol = this.extractFrequencies();
+    currCol = tf.transpose(tf.tensor([currCol]));
+    var currDat = tf.concat([this.currDat, currCol], 1);
+    this.currDat = currDat;
+
+    if (this.writing == false && this.stopped == false){
+      this.frames_since_last_coloured ++;
+    } else if (this.writing == true && this.stopped == false){
+      var data_whole = tf.concat([this.data_whole, currCol], 1);
+      this.data_whole = data_whole;
+    }
+
+    document.getElementById('predict-btn').onclick = () => {
+      if (this.writing == false){
         this.currDat = tf.zeros([16, 1], dtype='float32');
         this.writing = true;
         this.color = true;
-        document.getElementById('file-write-btn').innerHTML = "Writing...";
-        
-        setTimeout(() => {
-          this.writing = false;
-          this.color = false;
-          var link = document.createElement('a');
-          var data_pre = this.currDat.arraySync();
-          var str = "";
-          for (row in data_pre) {
-            str += data_pre[row].toString();
-            str += '\n';
-          }
-          var data = new Blob([str], {type: 'text/plain'});
-          // console.log(data);
-          textFile = window.URL.createObjectURL(data);
-          console.log('File written successfully to', textFile);
-          link.href = textFile;
-          link.download = "data.txt";
-          link.click();
-          document.getElementById('file-write-btn').innerHTML = "Start File Write";
-        }, 1000);
-
-      }
-
-      if(this.writing){
-        // data
-        var currCol = this.extractFrequencies();
-        currCol = tf.transpose(tf.tensor([currCol]));
-        var currDat = tf.concat([this.currDat, currCol], 1);
-        this.currDat = currDat;
-      }
-    } else {
-      // predicting
-      var currCol = this.extractFrequencies();
-      currCol = tf.transpose(tf.tensor([currCol]));
-      var currDat = tf.concat([this.currDat, currCol], 1);
-      this.currDat = currDat;
-
-      if (this.writing == false && this.stopped == false){
-        this.frames_since_last_coloured ++;
-      } else if (this.writing == true && this.stopped == false){
-        var data_whole = tf.concat([this.data_whole, currCol], 1);
-        this.data_whole = data_whole;
-      }
-      // console.log(this.frames_since_last_coloured, this.data_whole.shape[1]);
-      document.getElementById('predict-btn').onclick = () => {
-        if (this.writing == false){
-          this.currDat = tf.zeros([16, 1], dtype='float32');
-          this.writing = true;
-          this.color = true;
-          this.frames_since_last_coloured = 0;
-          document.getElementById('predict-btn').innerHTML = "Stop and Predict";
-          this.data_whole = tf.zeros([16, 1], dtype='float32');
-        } else {
-          this.writing = false;
-          this.color = false;
-          // var data_pre = currDat.arraySync();
-          var data_pre = data_whole.arraySync();
-          this.predictModel(data_pre);
-          document.getElementById('file-write-btn').innerHTML = "Record Sample";
-        }
+        this.frames_since_last_coloured = 0;
+        this.data_whole = tf.zeros([16, 1], dtype='float32');
+      } else {
+        this.writing = false;
+        this.color = false;
+        var data_pre = data_whole.arraySync();
+        this.predictModel(data_pre);
+        this.stopped = true;
+        this.custom_start_time_ms = this.start_time_ms;
       }
     }
+    
+    // if (this.mouseOnPred){
+    //   if (this.writing == false){
+    //     this.currDat = tf.zeros([16, 1], dtype='float32');
+    //     this.writing = true;
+    //     this.color = true;
+    //     this.frames_since_last_coloured = 0;
+    //     this.data_whole = tf.zeros([16, 1], dtype='float32');
+    //   } else {
+    //     this.writing = false;
+    //     this.color = false;
+    //     var data_pre = data_whole.arraySync();
+    //     this.predictModel(data_pre);
+    //     this.stopped = true;
+    //   }
+    // }
 
+    console.log(this.stopped);
+    if (this.stopped){
+      document.body.onclick = () => {
+        this.stopped = false;
+      }
+    }
 
     // this.renderTimeDomain();
     if (this.going){
@@ -589,10 +514,6 @@ Polymer('g-spectrogram-mini', {
         }
         amp += parseFloat(currCol[i]);
       }
-      // if (amp > -1000){
-      //   console.log(amp);
-      //   this.prev_max = amp;
-      // }
       if (amp > this.amplitude_thresh) {
         this.amplitude_over_thresh = true;
       } else {
@@ -633,8 +554,6 @@ Polymer('g-spectrogram-mini', {
       //console.warn(`Looks like zeros...`);
     }
 
-    // console.log('bytefrequency data', this.freq)
-
     var ctx = this.ctx;
     // Copy the current canvas onto the temp canvas.
 
@@ -659,7 +578,6 @@ Polymer('g-spectrogram-mini', {
           value = freq16[i];
         }
 
-        // console.log("16 process value: ", value);
         ctx.fillStyle = (this.color ? this.getFullColor(value) : this.getGrayColor(value));
 
         var percent = i / 16;
@@ -686,7 +604,6 @@ Polymer('g-spectrogram-mini', {
 
       // draw start time line
       tempCtx2.fillStyle = 'rgb(0, 0, 255)';
-      // console.log(this.width, this.start_time_ms/10, this.speed, this.height);
       var horiz = this.data_whole.shape[1];
       var horiz_shift = (horiz + this.frames_since_last_coloured) * this.speed 
       tempCtx2.fillRect(this.width - horiz_shift, 0, 5, this.height);
@@ -697,8 +614,6 @@ Polymer('g-spectrogram-mini', {
       var horiz_shift_start1 = horiz_shift - (this.custom_start_time_ms / 10 + 15) * this.speed;
       tempCtx2.fillRect(this.width - horiz_shift_start1, 0, 5, this.height);
       
-      // console.log(this.start_time_ms, horiz_shift_start);
-
       // Translate the canvas.
       // ctx.translate(-this.speed, 0);
       // Draw the copied image.

@@ -96,12 +96,12 @@ a{
 }
 
 #predict-btn{
-  border: 3px solid var(--c3);
+  border: 3px solid var(--c1);
   padding: 5px 10px;
   border-radius: 10px;
   display: block;
   width: 150px;
-  color: var(--c3)
+  color: var(--c1)
 }
 
 #switch-act-btn{
