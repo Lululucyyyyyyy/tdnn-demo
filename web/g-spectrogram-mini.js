@@ -376,9 +376,11 @@ Polymer('g-spectrogram-mini', {
     document.getElementById('start-stop-btn').onclick = () => {
       if (this.stopped){
         this.stopped = false;
+        document.getElementById('predict-btn').style.color = "border: 3px solid var(--c2); var(--c2)";
         document.getElementById('start-stop-btn').innerHTML = "Pause";
       } else {
         this.stopped = true;
+        document.getElementById('predict-btn').style.color = "border: 3px solid var(--c1); var(--c1)";
         document.getElementById('start-stop-btn').innerHTML = "Resume";
         // data_whole shape: 16 times length
         // console.log("this data whole array sync", this.data_whole.arraySync());
@@ -452,38 +454,26 @@ Polymer('g-spectrogram-mini', {
         this.currDat = tf.zeros([16, 1], dtype='float32');
         this.writing = true;
         this.color = true;
+        document.getElementById('predict-btn').style.color = "border: 3px solid var(--c2); var(--c2)";
         this.frames_since_last_coloured = 0;
         this.data_whole = tf.zeros([16, 1], dtype='float32');
       } else {
         this.writing = false;
         this.color = false;
+        document.getElementById('predict-btn').style.color = "border: 3px solid var(--c1); var(--c1)";
         var data_pre = data_whole.arraySync();
         this.predictModel(data_pre);
         this.stopped = true;
+        document.getElementById('start-stop-btn').innerHTML = "Resume";
         this.custom_start_time_ms = this.start_time_ms;
       }
     }
-    
-    // if (this.mouseOnPred){
-    //   if (this.writing == false){
-    //     this.currDat = tf.zeros([16, 1], dtype='float32');
-    //     this.writing = true;
-    //     this.color = true;
-    //     this.frames_since_last_coloured = 0;
-    //     this.data_whole = tf.zeros([16, 1], dtype='float32');
-    //   } else {
-    //     this.writing = false;
-    //     this.color = false;
-    //     var data_pre = data_whole.arraySync();
-    //     this.predictModel(data_pre);
-    //     this.stopped = true;
-    //   }
-    // }
 
-    console.log(this.stopped);
     if (this.stopped){
-      document.body.onclick = () => {
+      document.getElementById('start-stop-btn').onclick = () => {
         this.stopped = false;
+        document.getElementById('predict-btn').style.color = "border: 3px solid var(--c2); var(--c2)";
+        document.getElementById('start-stop-btn').innerHTML = "Pause";
       }
     }
 
@@ -521,6 +511,7 @@ Polymer('g-spectrogram-mini', {
       }
       
       this.currDat2 = currDat2;
+
     }, 10);
     
     var now = new Date();
