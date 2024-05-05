@@ -264,10 +264,10 @@ Polymer('g-spectrogram-mini', {
     document.getElementById('pred3').style = "height: "+y_scaled[2] * 30 +"vh";
     document.getElementById('pred1_text').innerHTML = y[0].toLocaleString(
       undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
-      document.getElementById('pred2_text').innerHTML = y[1].toLocaleString(
-        undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
-        document.getElementById('pred3_text').innerHTML = y[2].toLocaleString(
-          undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
+    document.getElementById('pred2_text').innerHTML = y[1].toLocaleString(
+      undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
+    document.getElementById('pred3_text').innerHTML = y[2].toLocaleString(
+      undefined, { minimumFractionDigits: 2 , maximumFractionDigits :2});
 
     // localStorage.setItem("currDat", the_dat.arraySync());
     // localStorage.setItem("dataTensorNormedArr", dataTensorNormed.arraySync());
@@ -450,6 +450,14 @@ Polymer('g-spectrogram-mini', {
     }
 
     document.getElementById('predict-btn').onclick = () => {
+      console.log('should reset height');
+      document.getElementById('pred1').style = "height: 1vh";
+      document.getElementById('pred2').style = "height: 1vh";
+      document.getElementById('pred3').style = "height: 1vh";
+      document.getElementById('pred1_text').innerHTML = "";
+      document.getElementById('pred2_text').innerHTML = "";
+      document.getElementById('pred3_text').innerHTML = "";
+      document.getElementById("predClass").innerHTML = "";
       if (this.writing == false){
         this.currDat = tf.zeros([16, 1], dtype='float32');
         this.writing = true;
